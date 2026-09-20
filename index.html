@@ -9,7 +9,6 @@
 
     <!-- ================= CSS ================= -->
     <style>
-
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -60,15 +59,22 @@
             background-color: #f1f1f1;
         }
 
-        .status {
-            padding: 5px 10px;
-            border-radius: 10px;
-            background-color: #ddd;
+ 
+        tr.desclassificada {
+            background-color: #ffe6e6;
+            color: #a00000;
         }
 
+        .status-tag {
+            background-color: #d9534f;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
     </style>
 </head>
-
 
 <body>
 
@@ -76,12 +82,12 @@
 
     <div class="container">
 
-        <h1> Equipes da Corrida</h1>
+        <h1>Equipes da Corrida</h1>
 
         <input
             type="text"
             id="pesquisa"
-            placeholder=" Pesquisar equipe..."
+            placeholder="Pesquisar equipe..."
         >
 
         <table>
@@ -97,131 +103,130 @@
             </thead>
 
             <tbody id="lista-equipes">
-                <!-- O JavaScript irá inserir as equipes aqui -->
+               
             </tbody>
 
         </table>
 
     </div>
 
-
     <!-- ================= JAVASCRIPT ================= -->
 
     <script>
+        // 2.2 e 2.6 - Classe Base com Encapsulamento (#)
+        class Equipe {
+            #id;
+            #nome;
+            #numero;
+            #checkpoints;
+            #ultimaPassagem;
 
-        // Lista de equipes
-        const equipes = [
-
-            {
-                id: 1,
-                nome: "Trilheiros RN",
-                numero: 1,
-                checkpoints: 5,
-                ultimaPassagem: "14:32"
-            },
-
-            {
-                id: 2,
-                nome: "Aventureiros",
-                numero: 2,
-                checkpoints: 4,
-                ultimaPassagem: "14:41"
-            },
-
-            {
-                id: 3,
-                nome: "Exploradores",
-                numero: 3,
-                checkpoints: 3,
-                ultimaPassagem: "14:50"
-            },
-
-            {
-                id: 4,
-                nome: "Equipe Alpha",
-                numero: 4,
-                checkpoints: 2,
-                ultimaPassagem: "15:02"
+            constructor(id, nome, numero, checkpoints, ultimaPassagem) {
+                this.#id = id;
+                this.#nome = nome;
+                this.#numero = numero;
+                this.#checkpoints = checkpoints;
+                this.#ultimaPassagem = ultimaPassagem;
             }
 
-        ];
+            getId() {
+                return this.#id;
+            }
 
+            getNome() {
+                return this.#nome;
+            }
 
-        // Função para mostrar as equipes
-        function mostrarEquipes(lista) {
+            getNumero() {
+                return this.#numero;
+            }
 
-            const tabela = document.getElementById("lista-equipes");
+            getCheckpoints() {
+                return this.#checkpoints;
+            }
 
-            // Limpa a tabela
-            tabela.innerHTML = "";
+            getUltimaPassagem() {
+                return this.#ultimaPassagem;
+            }
 
-
-            // Percorre a lista de equipes
-            lista.forEach((equipe, index) => {
-
+        
+            render(posicao) {
                 const linha = document.createElement("tr");
 
-
                 linha.innerHTML = `
-
-                    <td>
-                        ${index + 1}º
-                    </td>
-
-                    <td>
-                        ${equipe.nome}
-                    </td>
-
-                    <td>
-                        ${equipe.numero}
-                    </td>
-
-                    <td>
-                        ${equipe.checkpoints}
-                    </td>
-
-                    <td>
-                        ${equipe.ultimaPassagem}
-                    </td>
-
+                    <td>${posicao}º</td>
+                    <td>${this.#nome}</td>
+                    <td>${this.#numero}</td>
+                    <td>${this.#checkpoints}</td>
+                    <td>${this.#ultimaPassagem}</td>
                 `;
 
+                return linha;
+            }
+        }
 
-                tabela.appendChild(linha);
+        
+        class EquipeDesclassificada extends Equipe {
+            #motivo;
 
-            });
+            constructor(id, nome, numero, checkpoints, ultimaPassagem, motivo) {
+                super(id, nome, numero, checkpoints, ultimaPassagem);
+                this.#motivo = motivo;
+            }
 
+          
+            render(posicao) {
+                const linha = document.createElement("tr");
+                linha.classList.add("desclassificada");
+
+                linha.innerHTML = `
+                    <td>-</td>
+                    <td>${this.getNome()} <span class="status-tag">Desclassificada (${this.#motivo})</span></td>
+                    <td>${this.getNumero()}</td>
+                    <td>${this.getCheckpoints()}</td>
+                    <td>${this.getUltimaPassagem()}</td>
+                `;
+
+                return linha;
+            }
+        }
+
+        
+        const equipes = [
+            new Equipe(1, "Trilheiros RN", 1, 5, "14:32"),
+            new Equipe(2, "Aventureiros", 2, 4, "14:41"),
+            new Equipe(3, "Exploradores", 3, 3, "14:50"),
+            new EquipeDesclassificada(4, "Equipe Alpha", 4, 2, "15:02", "Rota Incorreta")
+        ];
+
+        function mostrarEquipes(lista) {
+            const tabela = document.getElementById("lista-equipes");
+            tabela.innerHTML = "";
+
+            let posicao = 1;
+            for (const equipe of lista) {
+                tabela.appendChild(equipe.render(posicao));
+                if (!(equipe instanceof EquipeDesclassificada)) {
+                    posicao++;
+                }
+            }
         }
 
 
-        // Mostra todas as equipes quando a página abre
         mostrarEquipes(equipes);
 
-
-        // Campo de pesquisa
+        
         const pesquisa = document.getElementById("pesquisa");
 
-
         pesquisa.addEventListener("input", function () {
-
             const texto = pesquisa.value.toLowerCase();
 
-
-            // Filtra as equipes pelo nome
             const resultado = equipes.filter(function (equipe) {
-
-                return equipe.nome
-                    .toLowerCase()
-                    .includes(texto);
-
+                return equipe.getNome().toLowerCase().includes(texto);
             });
 
-
-            // Mostra somente as equipes encontradas
             mostrarEquipes(resultado);
-
         });
-
     </script>
 
 </body>
