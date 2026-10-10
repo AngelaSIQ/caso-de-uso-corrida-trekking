@@ -1,5 +1,7 @@
-import { Corrida } from "../classes/corrida.js";
-import { corridas } from "../dados/corrida.js";
+
+import { Corrida } from "../classes/corridas.js";
+import { corridas } from "../dados/corridas.js";
+
 
 // Mostra as corridas na tabela
 export function mostrarCorridas() {
