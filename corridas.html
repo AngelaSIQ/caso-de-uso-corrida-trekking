@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Corridas</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <main class="container">
+        <h1>Gerenciamento de Corridas</h1>
+
+        <p>
+            <a href="index.html">Voltar para Equipes</a>
+        </p>
+
+        <section>
+            <h2>Cadastrar corrida</h2>
+
+            <form id="form-corrida">
+                <label for="nome">Nome da corrida:</label>
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    required
+                >
+
+                <label for="descricao">Descrição:</label>
+                <textarea
+                    id="descricao"
+                    name="descricao"
+                ></textarea>
+
+                <label for="data">Data da corrida:</label>
+                <input
+                    type="date"
+                    id="data"
+                    name="data"
+                    required
+                >
+
+                <button type="submit">
+                    Cadastrar corrida
+                </button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Corridas cadastradas</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody id="lista-corridas">
+                    <!-- As corridas serão exibidas aqui pelo JavaScript. -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script type="module" src="js/corridas.js"></script>
+
+</body>
+</html>
