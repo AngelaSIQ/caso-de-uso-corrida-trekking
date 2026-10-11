@@ -1,0 +1,123 @@
+import { Corrida } from "../classes/corrida.js";
+
+import {
+    corridas,
+    salvarCorridas,
+    excluirCorrida
+} from "../dados/armazenamento.js";
+
+const formulario = document.getElementById("form-corrida");
+const campoNome = document.getElementById("nome");
+const campoData = document.getElementById("data");
+const lista = document.getElementById("lista-corridas");
+const mensagem = document.getElementById("mensagem");
+const botaoCancelar = document.getElementById("cancelar");
+
+let idEditando = null;
+
+function avisar(texto) {
+    mensagem.textContent = texto;
+}
+
+function limparFormulario() {
+    formulario.reset();
+    idEditando = null;
+
+    formulario.querySelector('[type="submit"]').textContent =
+        "Salvar corrida";
+}
+
+function renderizar() {
+    lista.replaceChildren();
+
+    if (corridas.length === 0) {
+        const item = document.createElement("li");
+        item.textContent = "Nenhuma corrida cadastrada.";
+        lista.appendChild(item);
+        return;
+    }
+
+    corridas.forEach(corrida => {
+        const item = document.createElement("li");
+
+        const descricao = document.createElement("span");
+        descricao.textContent =
+            `${corrida.nome} — ${corrida.data || "Sem data"} `;
+
+        const editar = document.createElement("button");
+        editar.type = "button";
+        editar.textContent = "Editar";
+
+        editar.addEventListener("click", () => {
+            campoNome.value = corrida.nome;
+            campoData.value = corrida.data ?? "";
+            idEditando = corrida.id;
+
+            formulario.querySelector('[type="submit"]').textContent =
+                "Salvar alterações";
+
+            campoNome.focus();
+        });
+
+        const excluir = document.createElement("button");
+        excluir.type = "button";
+        excluir.textContent = "Excluir";
+
+        excluir.addEventListener("click", () => {
+            if (!confirm(`Deseja excluir a corrida "${corrida.nome}"?`)) {
+                return;
+            }
+
+            const resultado = excluirCorrida(corrida.id);
+            avisar(resultado.mensagem);
+            renderizar();
+        });
+
+        item.append(descricao, editar, excluir);
+        lista.appendChild(item);
+    });
+}
+
+formulario.addEventListener("submit", evento => {
+    evento.preventDefault();
+
+    const nome = campoNome.value.trim();
+    const data = campoData.value;
+
+    if (!nome || !data) {
+        avisar("Preencha o nome e a data da corrida.");
+        return;
+    }
+
+    try {
+        if (idEditando === null) {
+            corridas.push(new Corrida(nome, data));
+        } else {
+            const corrida = corridas.find(
+                item => item.id === idEditando
+            );
+
+            if (!corrida) {
+                throw new Error("Corrida não encontrada.");
+            }
+
+            corrida.nome = nome;
+            corrida.data = data;
+        }
+
+        salvarCorridas();
+        limparFormulario();
+        renderizar();
+        avisar("Corrida salva com sucesso!");
+    } catch (erro) {
+        console.error(erro);
+        avisar("Erro ao salvar a corrida: " + erro.message);
+    }
+});
+
+botaoCancelar.addEventListener("click", () => {
+    limparFormulario();
+    avisar("");
+});
+
+renderizar();
