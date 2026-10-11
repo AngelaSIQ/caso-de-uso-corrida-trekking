@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Equipes</title>
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+    <header>
+        <h1>Sistema de Corridas de Trekking</h1>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="corridas.html">Corridas</a>
+            <a href="equipes.html">Equipes</a>
+            <a href="checkpoints.html">Checkpoints</a>
+            <a href="passagens.html">Passagens</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Cadastrar Equipe</h2>
+
+        <form id="form-equipe">
+            <input type="hidden" id="id">
+
+            <label for="nome">Nome da equipe:</label>
+            <input type="text" id="nome" required>
+
+            <label for="corridaId">Corrida:</label>
+            <select id="corridaId" required>
+                <option value="">Selecione uma corrida</option>
+            </select>
+
+            <button type="submit">Salvar equipe</button>
+        </form>
+
+        <h2>Equipes cadastradas</h2>
+        <div id="lista-equipes"></div>
+    </main>
+
+    <script type="module" src="js/interface/equipes.js"></script>
+</body>
+</html>
+```

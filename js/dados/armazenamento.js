@@ -1,6 +1,6 @@
-import { Corrida } from "../classes/Corrida.js";
-import { Equipe } from "../classes/Equipe.js";
-import { Checkpoint } from "../classes/Checkpoint.js";
+import { Corrida } from "../classes/corrida.js";
+import { Equipe } from "../classes/equipe.js";
+import { Checkpoint } from "../classes/checkpoint.js";
 
 const CHAVE_CORRIDAS = "trekking_corridas";
 const CHAVE_EQUIPES = "trekking_equipes";
@@ -15,17 +15,10 @@ function lerDados(chave) {
     }
 }
 
-// Primeiro carregamos as corridas.
 export const corridas = lerDados(CHAVE_CORRIDAS).map(
-    dados => new Corrida(
-        dados.nome,
-        dados.data,
-        dados.id
-    )
+    dados => new Corrida(dados.nome, dados.data, dados.id)
 );
 
-// Depois carregamos as equipes e recuperamos
-// a referência para a corrida correspondente.
 export const equipes = lerDados(CHAVE_EQUIPES).map(dados => {
     const corrida = corridas.find(
         item => item.id === dados.corridaId
@@ -39,88 +32,71 @@ export const equipes = lerDados(CHAVE_EQUIPES).map(dados => {
     );
 });
 
-// Por último, carregamos os checkpoints.
-export const checkpoints = lerDados(CHAVE_CHECKPOINTS)
-    .flatMap(dados => {
-        const corrida = corridas.find(
-            item => item.id === dados.corridaId
-        );
+export const checkpoints = lerDados(CHAVE_CHECKPOINTS).flatMap(dados => {
+    const corrida = corridas.find(
+        item => item.id === dados.corridaId
+    );
 
-        if (!corrida) {
-            return [];
-        }
+    if (!corrida) return [];
 
-        return [
-            new Checkpoint(
-                dados.nome,
-                dados.localizacao ?? "",
-                corrida,
-                dados.id
-            )
-        ];
-    });
+    return [
+        new Checkpoint(
+            dados.nome,
+            dados.localizacao ?? "",
+            corrida,
+            dados.id
+        )
+    ];
+});
 
-// SALVAR CORRIDAS
 export function salvarCorridas() {
-    const dados = corridas.map(corrida => ({
-        id: corrida.id,
-        nome: corrida.nome,
-        data: corrida.data
-    }));
-
     localStorage.setItem(
         CHAVE_CORRIDAS,
-        JSON.stringify(dados)
+        JSON.stringify(corridas.map(corrida => ({
+            id: corrida.id,
+            nome: corrida.nome,
+            data: corrida.data
+        })))
     );
 }
 
-// SALVAR EQUIPES
 export function salvarEquipes() {
-    const dados = equipes.map(equipe => ({
-        id: equipe.id,
-        nome: equipe.nome,
-        integrantes: equipe.integrantes,
-        corridaId: equipe.corrida?.id ?? null
-    }));
-
     localStorage.setItem(
         CHAVE_EQUIPES,
-        JSON.stringify(dados)
+        JSON.stringify(equipes.map(equipe => ({
+            id: equipe.id,
+            nome: equipe.nome,
+            integrantes: equipe.integrantes,
+            corridaId: equipe.corrida?.id ?? null
+        })))
     );
 }
 
-// SALVAR CHECKPOINTS
 export function salvarCheckpoints() {
-    const dados = checkpoints.map(checkpoint => ({
-        id: checkpoint.id,
-        nome: checkpoint.nome,
-        localizacao: checkpoint.localizacao,
-        corridaId: checkpoint.corrida.id
-    }));
-
     localStorage.setItem(
         CHAVE_CHECKPOINTS,
-        JSON.stringify(dados)
+        JSON.stringify(checkpoints.map(checkpoint => ({
+            id: checkpoint.id,
+            nome: checkpoint.nome,
+            localizacao: checkpoint.localizacao,
+            corridaId: checkpoint.corrida?.id ?? null
+        })))
     );
 }
 
-// EXCLUIR CORRIDA
-// Não permite excluir uma corrida que tenha
-// equipes ou checkpoints associados.
 export function excluirCorrida(id) {
     const possuiEquipe = equipes.some(
         equipe => equipe.corrida?.id === id
     );
 
     const possuiCheckpoint = checkpoints.some(
-        checkpoint => checkpoint.corrida.id === id
+        checkpoint => checkpoint.corrida?.id === id
     );
 
     if (possuiEquipe || possuiCheckpoint) {
         return {
             sucesso: false,
-            mensagem:
-                "Não é possível excluir esta corrida, pois existem equipes ou checkpoints associados a ela."
+            mensagem: "Não é possível excluir esta corrida, pois existem equipes ou checkpoints associados a ela."
         };
     }
 
