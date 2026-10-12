@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passagens pelos checkpoints</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav style="padding: 15px; text-align: center; background-color: #f2f2f2;">
+        <a href="index.html" style="margin: 10px;">Equipes</a>
+        <a href="corridas.html" style="margin: 10px;">Corridas</a>
+        <a href="professores.html" style="margin: 10px;">Professores</a>
+        <a href="passagens.html" style="margin: 10px;" aria-current="page">Passagens</a>
+    </nav>
+
+    <main class="container">
+        <h1>Passagens pelos checkpoints</h1>
+        <p id="aviso-prerequisitos" class="aviso-prerequisitos" hidden>
+            Cadastre uma corrida, seus checkpoints e uma equipe antes de registrar passagens.
+        </p>
+        <p id="mensagem-status" class="mensagem-status" role="status" aria-live="polite"></p>
+
+        <section>
+            <h2 id="titulo-formulario">Registrar passagem</h2>
+            <form id="form-passagem" class="form-passagem">
+                <input type="hidden" id="passagem-id">
+
+                <label for="corrida-id">
+                    Corrida
+                    <select id="corrida-id" required>
+                        <option value="">Selecione uma corrida</option>
+                    </select>
+                </label>
+
+                <label for="checkpoint-id">
+                    Checkpoint
+                    <select id="checkpoint-id" required disabled>
+                        <option value="">Selecione uma corrida primeiro</option>
+                    </select>
+                </label>
+
+                <label for="equipe-id">
+                    Equipe
+                    <select id="equipe-id" required>
+                        <option value="">Selecione uma equipe</option>
+                    </select>
+                </label>
+
+                <label for="data-hora">
+                    Data e hora da passagem
+                    <input type="datetime-local" id="data-hora" required>
+                </label>
+
+                <div class="form-acoes">
+                    <button type="submit" id="botao-salvar">Registrar passagem</button>
+                    <button type="button" id="botao-cancelar" hidden>Cancelar edição</button>
+                </div>
+            </form>
+        </section>
+
+        <section>
+            <h2>Passagens registradas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Corrida</th>
+                        <th>Checkpoint</th>
+                        <th>Equipe</th>
+                        <th>Data e hora</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-passagens"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <script type="module" src="js/passagens.js"></script>
+</body>
+</html>

@@ -1,6 +1,8 @@
 """Configuração e fábrica da aplicação Flask."""
 
-from flask import Flask
+from pathlib import Path
+
+from flask import Flask, abort, send_from_directory
 from flask_cors import CORS
 
 from app.database import db
@@ -8,6 +10,8 @@ from app.routes.checkpoint_routes import checkpoint_bp
 from app.routes.corrida_routes import corrida_bp
 from app.routes.equipe_routes import equipe_bp
 from app.routes.passagem_routes import passagem_bp
+
+FRONTEND_ROOT = Path(__file__).resolve().parent.parent
 
 
 def create_app():
@@ -29,6 +33,12 @@ def create_app():
 	@application.get("/")
 	def index():
 		return {"mensagem": "API de Controle de Checkpoints em Corridas de Trekking"}
+
+	@application.get("/<path:filename>")
+	def arquivos_frontend(filename):
+		if Path(filename).suffix.lower() not in {".html", ".css", ".js"}:
+			abort(404)
+		return send_from_directory(FRONTEND_ROOT, filename)
 
 	return application
 
