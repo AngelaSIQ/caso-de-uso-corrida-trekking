@@ -5,7 +5,7 @@ Componentes:
 Angela Siqueira de Lima.
 Maria Clara Oliveira de Moura.
 Lidia Silva da Cruz. 
-Deisiane Costa Gomes.
+
 
 ## API Flask
 
