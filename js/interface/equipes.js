@@ -19,6 +19,7 @@ const campoIntegrantes = document.getElementById("integrantes");
 const campoCorrida = document.getElementById("corridaId");
 const lista = document.getElementById("lista-equipes");
 const mensagem = document.getElementById("mensagem");
+const avisoCorridas = document.getElementById("aviso-corridas");
 const botaoCancelar = document.getElementById("cancelar");
 
 let idEditando = null;
@@ -29,6 +30,7 @@ function avisar(texto) {
 
 function preencherCorridas() {
     campoCorrida.replaceChildren(criarOpcaoSelecioneCorrida());
+    avisoCorridas.hidden = corridas.length > 0;
 
     corridas.forEach(corrida => {
         campoCorrida.appendChild(criarOpcaoCorrida(corrida));

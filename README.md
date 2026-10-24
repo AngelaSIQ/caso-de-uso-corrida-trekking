@@ -63,6 +63,8 @@ pip install -r requirements.txt
 flask run
 ```
 
-A API estará disponível em `http://127.0.0.1:5000`.
+A interface do sistema estará disponível em `http://127.0.0.1:5000/`. A API
+continua disponível nas rotas `/api/corridas`, `/api/checkpoints`,
+`/api/equipes` e `/api/passagens`.
 
-As rotas principais são `/api/corridas`, `/api/checkpoints`, `/api/equipes` e `/api/passagens`. O ranking da corrida atual está disponível em `/api/corridas/<id>/status`.
+O ranking da corrida atual está disponível em `/api/corridas/<id>/status`.

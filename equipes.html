@@ -35,8 +35,16 @@
                 <option value="">Selecione uma corrida</option>
             </select>
 
+            <p id="aviso-corridas" aria-live="polite" hidden>
+                Nenhuma corrida cadastrada.
+                <a href="corridas.html">Cadastre uma corrida primeiro</a>.
+            </p>
+
             <button type="submit">Salvar equipe</button>
+            <button type="button" id="cancelar">Cancelar</button>
         </form>
+
+        <p id="mensagem" aria-live="polite"></p>
 
         <h2>Equipes cadastradas</h2>
         <ul id="lista-equipes"></ul>
