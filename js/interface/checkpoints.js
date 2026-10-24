@@ -1,5 +1,10 @@
 
-import { Checkpoint } from "/classes/checkpoint.js";
+import { Checkpoint } from "../classes/checkpoint.js";
+import {
+    criarItemCheckpoint,
+    criarOpcaoCorrida,
+    criarOpcaoSelecioneCorrida
+} from "./componentes.js";
 
 import {
     corridas,
@@ -10,8 +15,8 @@ import {
 
 const formulario = document.getElementById("form-checkpoint");
 const campoNome = document.getElementById("nome");
-const campoLocalizacao = document.getElementById("localizacao");
-const campoCorrida = document.getElementById("corrida");
+const campoLocalizacao = document.getElementById("local");
+const campoCorrida = document.getElementById("corridaId");
 const lista = document.getElementById("lista-checkpoints");
 const mensagem = document.getElementById("mensagem");
 const botaoCancelar = document.getElementById("cancelar");
@@ -23,18 +28,10 @@ function avisar(texto) {
 }
 
 function preencherCorridas() {
-    campoCorrida.replaceChildren();
-
-    const inicial = document.createElement("option");
-    inicial.value = "";
-    inicial.textContent = "Selecione uma corrida";
-    campoCorrida.appendChild(inicial);
+    campoCorrida.replaceChildren(criarOpcaoSelecioneCorrida());
 
     corridas.forEach(corrida => {
-        const opcao = document.createElement("option");
-        opcao.value = corrida.id;
-        opcao.textContent = corrida.nome;
-        campoCorrida.appendChild(opcao);
+        campoCorrida.appendChild(criarOpcaoCorrida(corrida));
     });
 }
 
@@ -50,44 +47,28 @@ function renderizar() {
     lista.replaceChildren();
 
     checkpoints.forEach(checkpoint => {
-        const item = document.createElement("li");
-        const descricao = document.createElement("span");
+        lista.appendChild(criarItemCheckpoint(checkpoint, {
+            aoEditar: () => {
+                campoNome.value = checkpoint.nome;
+                campoLocalizacao.value = checkpoint.localizacao;
+                campoCorrida.value = checkpoint.corrida.id;
+                idEditando = checkpoint.id;
 
-        descricao.textContent =
-            `${checkpoint.nome} — ${checkpoint.localizacao} — Corrida: ${checkpoint.corrida.nome} `;
+                formulario.querySelector('[type="submit"]').textContent =
+                    "Salvar alterações";
 
-        const editar = document.createElement("button");
-        editar.type = "button";
-        editar.textContent = "Editar";
+                campoNome.focus();
+            },
+            aoExcluir: () => {
+                if (!confirm(`Excluir o checkpoint "${checkpoint.nome}"?`)) {
+                    return;
+                }
 
-        editar.addEventListener("click", () => {
-            campoNome.value = checkpoint.nome;
-            campoLocalizacao.value = checkpoint.localizacao;
-            campoCorrida.value = checkpoint.corrida.id;
-            idEditando = checkpoint.id;
-
-            formulario.querySelector('[type="submit"]').textContent =
-                "Salvar alterações";
-
-            campoNome.focus();
-        });
-
-        const excluir = document.createElement("button");
-        excluir.type = "button";
-        excluir.textContent = "Excluir";
-
-        excluir.addEventListener("click", () => {
-            if (!confirm(`Excluir o checkpoint "${checkpoint.nome}"?`)) {
-                return;
+                const resultado = excluirCheckpoint(checkpoint.id);
+                avisar(resultado.mensagem);
+                renderizar();
             }
-
-            const resultado = excluirCheckpoint(checkpoint.id);
-            avisar(resultado.mensagem);
-            renderizar();
-        });
-
-        item.append(descricao, editar, excluir);
-        lista.appendChild(item);
+        }));
     });
 }
 

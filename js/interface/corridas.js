@@ -1,4 +1,8 @@
 import { Corrida } from "../classes/corrida.js";
+import {
+    criarEstadoVazio,
+    criarItemCorrida
+} from "./componentes.js";
 
 import {
     corridas,
@@ -31,50 +35,32 @@ function renderizar() {
     lista.replaceChildren();
 
     if (corridas.length === 0) {
-        const item = document.createElement("li");
-        item.textContent = "Nenhuma corrida cadastrada.";
-        lista.appendChild(item);
+        lista.appendChild(criarEstadoVazio("Nenhuma corrida cadastrada."));
         return;
     }
 
     corridas.forEach(corrida => {
-        const item = document.createElement("li");
+        lista.appendChild(criarItemCorrida(corrida, {
+            aoEditar: () => {
+                campoNome.value = corrida.nome;
+                campoData.value = corrida.data ?? "";
+                idEditando = corrida.id;
 
-        const descricao = document.createElement("span");
-        descricao.textContent =
-            `${corrida.nome} — ${corrida.data || "Sem data"} `;
+                formulario.querySelector('[type="submit"]').textContent =
+                    "Salvar alterações";
 
-        const editar = document.createElement("button");
-        editar.type = "button";
-        editar.textContent = "Editar";
+                campoNome.focus();
+            },
+            aoExcluir: () => {
+                if (!confirm(`Deseja excluir a corrida "${corrida.nome}"?`)) {
+                    return;
+                }
 
-        editar.addEventListener("click", () => {
-            campoNome.value = corrida.nome;
-            campoData.value = corrida.data ?? "";
-            idEditando = corrida.id;
-
-            formulario.querySelector('[type="submit"]').textContent =
-                "Salvar alterações";
-
-            campoNome.focus();
-        });
-
-        const excluir = document.createElement("button");
-        excluir.type = "button";
-        excluir.textContent = "Excluir";
-
-        excluir.addEventListener("click", () => {
-            if (!confirm(`Deseja excluir a corrida "${corrida.nome}"?`)) {
-                return;
+                const resultado = excluirCorrida(corrida.id);
+                avisar(resultado.mensagem);
+                renderizar();
             }
-
-            const resultado = excluirCorrida(corrida.id);
-            avisar(resultado.mensagem);
-            renderizar();
-        });
-
-        item.append(descricao, editar, excluir);
-        lista.appendChild(item);
+        }));
     });
 }
 

@@ -1,5 +1,10 @@
 
-import { Equipe } from "/classes/equipe.js";
+import { Equipe } from "../classes/equipe.js";
+import {
+    criarItemEquipe,
+    criarOpcaoCorrida,
+    criarOpcaoSelecioneCorrida
+} from "./componentes.js";
 
 import {
     corridas,
@@ -11,7 +16,7 @@ import {
 const formulario = document.getElementById("form-equipe");
 const campoNome = document.getElementById("nome");
 const campoIntegrantes = document.getElementById("integrantes");
-const campoCorrida = document.getElementById("corrida");
+const campoCorrida = document.getElementById("corridaId");
 const lista = document.getElementById("lista-equipes");
 const mensagem = document.getElementById("mensagem");
 const botaoCancelar = document.getElementById("cancelar");
@@ -23,18 +28,10 @@ function avisar(texto) {
 }
 
 function preencherCorridas() {
-    campoCorrida.replaceChildren();
-
-    const inicial = document.createElement("option");
-    inicial.value = "";
-    inicial.textContent = "Selecione uma corrida";
-    campoCorrida.appendChild(inicial);
+    campoCorrida.replaceChildren(criarOpcaoSelecioneCorrida());
 
     corridas.forEach(corrida => {
-        const opcao = document.createElement("option");
-        opcao.value = corrida.id;
-        opcao.textContent = corrida.nome;
-        campoCorrida.appendChild(opcao);
+        campoCorrida.appendChild(criarOpcaoCorrida(corrida));
     });
 }
 
@@ -50,44 +47,28 @@ function renderizar() {
     lista.replaceChildren();
 
     equipes.forEach(equipe => {
-        const item = document.createElement("li");
-        const descricao = document.createElement("span");
+        lista.appendChild(criarItemEquipe(equipe, {
+            aoEditar: () => {
+                campoNome.value = equipe.nome;
+                campoIntegrantes.value = equipe.integrantes;
+                campoCorrida.value = equipe.corrida.id;
+                idEditando = equipe.id;
 
-        descricao.textContent =
-            `${equipe.nome} — ${equipe.integrantes} — Corrida: ${equipe.corrida.nome} `;
+                formulario.querySelector('[type="submit"]').textContent =
+                    "Salvar alterações";
 
-        const editar = document.createElement("button");
-        editar.type = "button";
-        editar.textContent = "Editar";
+                campoNome.focus();
+            },
+            aoExcluir: () => {
+                if (!confirm(`Excluir a equipe "${equipe.nome}"?`)) {
+                    return;
+                }
 
-        editar.addEventListener("click", () => {
-            campoNome.value = equipe.nome;
-            campoIntegrantes.value = equipe.integrantes;
-            campoCorrida.value = equipe.corrida.id;
-            idEditando = equipe.id;
-
-            formulario.querySelector('[type="submit"]').textContent =
-                "Salvar alterações";
-
-            campoNome.focus();
-        });
-
-        const excluir = document.createElement("button");
-        excluir.type = "button";
-        excluir.textContent = "Excluir";
-
-        excluir.addEventListener("click", () => {
-            if (!confirm(`Excluir a equipe "${equipe.nome}"?`)) {
-                return;
+                const resultado = excluirEquipe(equipe.id);
+                avisar(resultado.mensagem);
+                renderizar();
             }
-
-            const resultado = excluirEquipe(equipe.id);
-            avisar(resultado.mensagem);
-            renderizar();
-        });
-
-        item.append(descricao, editar, excluir);
-        lista.appendChild(item);
+        }));
     });
 }
 

@@ -6,14 +6,14 @@
     <title>Cadastro de Checkpoints</title>
     <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body>
+<body data-page="checkpoints">
     <header>
         <h1>Sistema de Corridas de Trekking</h1>
-        <nav>
+        <nav aria-label="Navegação principal">
             <a href="index.html">Início</a>
             <a href="corridas.html">Corridas</a>
             <a href="equipes.html">Equipes</a>
-            <a href="checkpoints.html">Checkpoints</a>
+            <a href="checkpoints.html" aria-current="page">Checkpoints</a>
             <a href="passagens.html">Passagens</a>
         </nav>
     </header>
@@ -39,7 +39,7 @@
         </form>
 
         <h2>Checkpoints cadastrados</h2>
-        <div id="lista-checkpoints"></div>
+        <ul id="lista-checkpoints"></ul>
     </main>
 
     <script type="module" src="js/interface/checkpoints.js"></script>

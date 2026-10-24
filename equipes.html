@@ -6,13 +6,13 @@
     <title>Cadastro de Equipes</title>
     <link rel="stylesheet" href="css/estilo.css">
 </head>
-<body>
+<body data-page="equipes">
     <header>
         <h1>Sistema de Corridas de Trekking</h1>
-        <nav>
+        <nav aria-label="Navegação principal">
             <a href="index.html">Início</a>
             <a href="corridas.html">Corridas</a>
-            <a href="equipes.html">Equipes</a>
+            <a href="equipes.html" aria-current="page">Equipes</a>
             <a href="checkpoints.html">Checkpoints</a>
             <a href="passagens.html">Passagens</a>
         </nav>
@@ -27,6 +27,9 @@
             <label for="nome">Nome da equipe:</label>
             <input type="text" id="nome" required>
 
+            <label for="integrantes">Integrantes:</label>
+            <input type="text" id="integrantes" required>
+
             <label for="corridaId">Corrida:</label>
             <select id="corridaId" required>
                 <option value="">Selecione uma corrida</option>
@@ -36,7 +39,7 @@
         </form>
 
         <h2>Equipes cadastradas</h2>
-        <div id="lista-equipes"></div>
+        <ul id="lista-equipes"></ul>
     </main>
 
     <script type="module" src="js/interface/equipes.js"></script>
