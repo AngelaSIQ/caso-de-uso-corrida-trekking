@@ -7,29 +7,53 @@ Maria Clara Oliveira de Moura.
 Lidia Silva da Cruz. 
 
 
-## API Flask
 
-### Ambiente virtual
+# Sistema de Corrida de Trekking
 
-```bash
-python -m venv venv
-source venv/bin/activate
+## Descrição
+
+Projeto desenvolvido para a atividade de refatoração e organização do código JavaScript, com separação das classes, dos dados e das interfaces.
+
+## Recursos
+
+- Corridas
+- Professores
+- Equipes
+
+## Tecnologias utilizadas
+
+- HTML5
+- CSS3
+- JavaScript com módulos ES6 (`import` e `export`)
+
+## Organização do projeto
+
+```text
+projeto/
+├── index.html
+├── corridas.html
+├── professores.html
+├── equipes.html
+├── css/
+│   └── style.css
+└── js/
+    ├── classes/
+    ├── dados/
+    └── interface/
 ```
 
-No Windows, use `venv\Scripts\activate` para ativar o ambiente virtual.
+## Organização do JavaScript
 
-### Instalação
+- `classes/`: contém as classes utilizadas pelo sistema.
+- `dados/`: contém os dados mantidos em memória.
+- `interface/`: contém os códigos responsáveis por exibir os dados nas páginas.
 
-```bash
-pip install -r requirements.txt
-```
+## Execução
 
-### Execução
+Abra a pasta do projeto no Visual Studio Code e execute as páginas com a extensão Live Server.
 
-```bash
-flask run
-```
+O arquivo `index.html` é a página inicial e permite acessar os recursos disponíveis.
 
-A API estará disponível em `http://127.0.0.1:5000`.
+## Observações
 
-As rotas principais são `/api/corridas`, `/api/checkpoints`, `/api/equipes` e `/api/passagens`. O ranking da corrida atual está disponível em `/api/corridas/<id>/status`.
+Esta versão tem como objetivo organizar o código e utilizar módulos JavaScript. Os dados de exemplo são temporários e não são persistidos após o encerramento da página.

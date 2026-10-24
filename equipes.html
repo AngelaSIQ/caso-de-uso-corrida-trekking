@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipes da Corrida</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/script.js"></script>
+</head>
+<body>
+    <main class="container">
+        <a href="index.html">← Voltar ao início</a>
+        <h1>Equipes da Corrida</h1>
+
+        <input
+            type="text"
+            id="pesquisa"
+            placeholder="Pesquisar equipe..."
+            aria-label="Pesquisar equipe"
+        >
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Posição</th>
+                    <th>Equipe</th>
+                    <th>Número</th>
+                    <th>Checkpoints</th>
+                    <th>Última Passagem</th>
+                </tr>
+            </thead>
+            <tbody id="lista-equipes"></tbody>
+        </table>
+    </main>
+</body>
+</html>
