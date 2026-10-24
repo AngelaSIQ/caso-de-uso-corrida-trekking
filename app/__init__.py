@@ -32,5 +32,5 @@ def create_app():
 
 	return application
 
-
+teste gitpush
 app = create_app()
