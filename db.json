@@ -1,0 +1,45 @@
+{
+  "corridas": [
+    {
+      "id": 1,
+      "nome": "Trekking Serra Verde",
+      "data": "2026-11-15"
+    }
+  ],
+  "equipes": [
+    {
+      "id": 1,
+      "nome": "Trilheiros do Norte",
+      "integrantes": "Ana, Bruno e Caio",
+      "corridaId": 1
+    },
+    {
+      "id": 2,
+      "nome": "Passo a Passo",
+      "integrantes": "Diana, Eduardo e Fátima",
+      "corridaId": 1
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": 1,
+      "nome": "Lagoa",
+      "localizacao": "Margem da Lagoa Azul",
+      "corridaId": 1
+    },
+    {
+      "id": 2,
+      "nome": "Mirante",
+      "localizacao": "Topo da Serra",
+      "corridaId": 1
+    }
+  ],
+  "passagens": [
+    {
+      "id": 1,
+      "equipeId": 1,
+      "checkpointId": 1,
+      "dataHora": "2026-11-15T08:15"
+    }
+  ]
+}

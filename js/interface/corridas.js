@@ -1,4 +1,3 @@
-import { Corrida } from "../classes/corrida.js";
 import {
     criarEstadoVazio,
     criarItemCorrida
@@ -6,7 +5,8 @@ import {
 
 import {
     corridas,
-    salvarCorridas,
+    carregarDados,
+    salvarCorrida,
     excluirCorrida
 } from "../dados/armazenamento.js";
 
@@ -51,20 +51,24 @@ function renderizar() {
 
                 campoNome.focus();
             },
-            aoExcluir: () => {
+            aoExcluir: async () => {
                 if (!confirm(`Deseja excluir a corrida "${corrida.nome}"?`)) {
                     return;
                 }
 
-                const resultado = excluirCorrida(corrida.id);
-                avisar(resultado.mensagem);
-                renderizar();
+                try {
+                    const resultado = await excluirCorrida(corrida.id);
+                    avisar(resultado.mensagem);
+                    renderizar();
+                } catch (erro) {
+                    avisar("Erro ao excluir a corrida: " + erro.message);
+                }
             }
         }));
     });
 }
 
-formulario.addEventListener("submit", evento => {
+formulario.addEventListener("submit", async evento => {
     evento.preventDefault();
 
     const nome = campoNome.value.trim();
@@ -76,22 +80,7 @@ formulario.addEventListener("submit", evento => {
     }
 
     try {
-        if (idEditando === null) {
-            corridas.push(new Corrida(nome, data));
-        } else {
-            const corrida = corridas.find(
-                item => item.id === idEditando
-            );
-
-            if (!corrida) {
-                throw new Error("Corrida não encontrada.");
-            }
-
-            corrida.nome = nome;
-            corrida.data = data;
-        }
-
-        salvarCorridas();
+        await salvarCorrida(idEditando, nome, data);
         limparFormulario();
         renderizar();
         avisar("Corrida salva com sucesso!");
@@ -106,4 +95,10 @@ botaoCancelar.addEventListener("click", () => {
     avisar("");
 });
 
-renderizar();
+try {
+    await carregarDados();
+    renderizar();
+} catch (erro) {
+    console.error(erro);
+    avisar("Não foi possível carregar as corridas. Verifique se a API está em execução.");
+}

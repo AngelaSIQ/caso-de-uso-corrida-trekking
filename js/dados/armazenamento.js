@@ -2,120 +2,186 @@ import { Corrida } from "../classes/corrida.js";
 import { Equipe } from "../classes/equipe.js";
 import { Checkpoint } from "../classes/checkpoint.js";
 import { Passagem } from "../classes/passagem.js";
+import * as apiCorridas from "../api/corridas.js";
+import * as apiEquipes from "../api/equipes.js";
+import * as apiCheckpoints from "../api/checkpoints.js";
+import * as apiPassagens from "../api/passagens.js";
 
-const CHAVE_CORRIDAS = "trekking_corridas";
-const CHAVE_EQUIPES = "trekking_equipes";
-const CHAVE_CHECKPOINTS = "trekking_checkpoints";
-const CHAVE_PASSAGENS = "trekking_passagens";
+export const corridas = [];
+export const equipes = [];
+export const checkpoints = [];
+export const passagens = [];
 
-function lerDados(chave) {
-    try {
-        const dados = JSON.parse(localStorage.getItem(chave));
-        return Array.isArray(dados) ? dados : [];
-    } catch {
-        return [];
-    }
+function substituirConteudo(lista, novosDados) {
+    lista.splice(0, lista.length, ...novosDados);
 }
 
-export const corridas = lerDados(CHAVE_CORRIDAS).map(
-    dados => new Corrida(dados.nome, dados.data, dados.id)
-);
+export async function carregarDados() {
+    const [dadosCorridas, dadosEquipes, dadosCheckpoints, dadosPassagens] =
+        await Promise.all([
+            apiCorridas.listarCorridas(),
+            apiEquipes.listarEquipes(),
+            apiCheckpoints.listarCheckpoints(),
+            apiPassagens.listarPassagens()
+        ]);
 
-export const equipes = lerDados(CHAVE_EQUIPES).map(dados => {
-    const corrida = corridas.find(
-        item => item.id === dados.corridaId
-    ) ?? null;
-
-    return new Equipe(
-        dados.nome,
-        dados.integrantes ?? "",
-        corrida,
-        dados.id
+    const novasCorridas = dadosCorridas.map(
+        dados => new Corrida(dados.nome, dados.data, Number(dados.id))
     );
-});
+    const novasEquipes = dadosEquipes.map(dados => {
+        const corrida = novasCorridas.find(
+            item => item.id === Number(dados.corridaId)
+        );
 
-export const checkpoints = lerDados(CHAVE_CHECKPOINTS).flatMap(dados => {
-    const corrida = corridas.find(
-        item => item.id === dados.corridaId
-    );
+        if (!corrida) {
+            throw new Error(`Corrida da equipe "${dados.nome}" não encontrada.`);
+        }
 
-    if (!corrida) return [];
-
-    return [
-        new Checkpoint(
+        return new Equipe(
             dados.nome,
-            dados.localizacao ?? "",
+            dados.integrantes,
             corrida,
-            dados.id
-        )
-    ];
-});
+            Number(dados.id)
+        );
+    });
+    const novosCheckpoints = dadosCheckpoints.map(dados => {
+        const corrida = novasCorridas.find(
+            item => item.id === Number(dados.corridaId)
+        );
 
-export const passagens = lerDados(CHAVE_PASSAGENS).flatMap(dados => {
-    const equipe = equipes.find(item => item.id === dados.equipeId);
-    const checkpoint = checkpoints.find(
-        item => item.id === dados.checkpointId
-    );
+        if (!corrida) {
+            throw new Error(
+                `Corrida do checkpoint "${dados.nome}" não encontrada.`
+            );
+        }
 
-    if (!equipe || !checkpoint) return [];
+        return new Checkpoint(
+            dados.nome,
+            dados.localizacao,
+            corrida,
+            Number(dados.id)
+        );
+    });
+    const novasPassagens = dadosPassagens.map(dados => {
+        const equipe = novasEquipes.find(
+            item => item.id === Number(dados.equipeId)
+        );
+        const checkpoint = novosCheckpoints.find(
+            item => item.id === Number(dados.checkpointId)
+        );
 
-    try {
-        return [
-            new Passagem(equipe, checkpoint, dados.dataHora, dados.id)
-        ];
-    } catch {
-        return [];
+        if (!equipe || !checkpoint) {
+            throw new Error(
+                `Equipe ou checkpoint da passagem ${dados.id} não encontrado.`
+            );
+        }
+
+        return new Passagem(
+            equipe,
+            checkpoint,
+            dados.dataHora,
+            Number(dados.id)
+        );
+    });
+
+    substituirConteudo(corridas, novasCorridas);
+    substituirConteudo(equipes, novasEquipes);
+    substituirConteudo(checkpoints, novosCheckpoints);
+    substituirConteudo(passagens, novasPassagens);
+}
+
+export async function salvarCorrida(id, nome, data) {
+    if (id === null) {
+        const dados = await apiCorridas.cadastrarCorrida({ nome, data });
+        const corrida = new Corrida(dados.nome, dados.data, Number(dados.id));
+        corridas.push(corrida);
+        return corrida;
     }
-});
 
-export function salvarCorridas() {
-    localStorage.setItem(
-        CHAVE_CORRIDAS,
-        JSON.stringify(corridas.map(corrida => ({
-            id: corrida.id,
-            nome: corrida.nome,
-            data: corrida.data
-        })))
-    );
+    await apiCorridas.atualizarCorrida(id, { nome, data });
+    const corrida = corridas.find(item => item.id === id);
+    if (!corrida) throw new Error("Corrida não encontrada.");
+    corrida.nome = nome;
+    corrida.data = data;
+    return corrida;
 }
 
-export function salvarEquipes() {
-    localStorage.setItem(
-        CHAVE_EQUIPES,
-        JSON.stringify(equipes.map(equipe => ({
-            id: equipe.id,
-            nome: equipe.nome,
-            integrantes: equipe.integrantes,
-            corridaId: equipe.corrida?.id ?? null
-        })))
-    );
+export async function salvarEquipe(id, nome, integrantes, corrida) {
+    const dados = { nome, integrantes, corridaId: corrida.id };
+
+    if (id === null) {
+        const resposta = await apiEquipes.cadastrarEquipe(dados);
+        const equipe = new Equipe(
+            resposta.nome,
+            resposta.integrantes,
+            corrida,
+            Number(resposta.id)
+        );
+        equipes.push(equipe);
+        return equipe;
+    }
+
+    await apiEquipes.atualizarEquipe(id, dados);
+    const equipe = equipes.find(item => item.id === id);
+    if (!equipe) throw new Error("Equipe não encontrada.");
+    equipe.nome = nome;
+    equipe.integrantes = integrantes;
+    equipe.corrida = corrida;
+    return equipe;
 }
 
-export function salvarCheckpoints() {
-    localStorage.setItem(
-        CHAVE_CHECKPOINTS,
-        JSON.stringify(checkpoints.map(checkpoint => ({
-            id: checkpoint.id,
-            nome: checkpoint.nome,
-            localizacao: checkpoint.localizacao,
-            corridaId: checkpoint.corrida?.id ?? null
-        })))
-    );
+export async function salvarCheckpoint(id, nome, localizacao, corrida) {
+    const dados = { nome, localizacao, corridaId: corrida.id };
+
+    if (id === null) {
+        const resposta = await apiCheckpoints.cadastrarCheckpoint(dados);
+        const checkpoint = new Checkpoint(
+            resposta.nome,
+            resposta.localizacao,
+            corrida,
+            Number(resposta.id)
+        );
+        checkpoints.push(checkpoint);
+        return checkpoint;
+    }
+
+    await apiCheckpoints.atualizarCheckpoint(id, dados);
+    const checkpoint = checkpoints.find(item => item.id === id);
+    if (!checkpoint) throw new Error("Checkpoint não encontrado.");
+    checkpoint.nome = nome;
+    checkpoint.localizacao = localizacao;
+    checkpoint.corrida = corrida;
+    return checkpoint;
 }
 
-export function salvarPassagens() {
-    localStorage.setItem(
-        CHAVE_PASSAGENS,
-        JSON.stringify(passagens.map(passagem => ({
-            id: passagem.id,
-            equipeId: passagem.equipe.id,
-            checkpointId: passagem.checkpoint.id,
-            dataHora: passagem.dataHora
-        })))
-    );
+export async function salvarPassagem(id, equipe, checkpoint, dataHora) {
+    const dados = {
+        equipeId: equipe.id,
+        checkpointId: checkpoint.id,
+        dataHora
+    };
+
+    if (id === null) {
+        const resposta = await apiPassagens.cadastrarPassagem(dados);
+        const passagem = new Passagem(
+            equipe,
+            checkpoint,
+            resposta.dataHora,
+            Number(resposta.id)
+        );
+        passagens.push(passagem);
+        return passagem;
+    }
+
+    await apiPassagens.atualizarPassagem(id, dados);
+    const indice = passagens.findIndex(item => item.id === id);
+    if (indice === -1) throw new Error("Passagem não encontrada.");
+    const passagem = new Passagem(equipe, checkpoint, dataHora, id);
+    passagens.splice(indice, 1, passagem);
+    return passagem;
 }
 
-export function excluirEquipe(id) {
+export async function excluirEquipe(id) {
     if (passagens.some(passagem => passagem.equipe.id === id)) {
         return {
             sucesso: false,
@@ -128,12 +194,12 @@ export function excluirEquipe(id) {
         return { sucesso: false, mensagem: "Equipe não encontrada." };
     }
 
+    await apiEquipes.excluirEquipe(id);
     equipes.splice(indice, 1);
-    salvarEquipes();
     return { sucesso: true, mensagem: "Equipe excluída com sucesso." };
 }
 
-export function excluirCheckpoint(id) {
+export async function excluirCheckpoint(id) {
     if (passagens.some(passagem => passagem.checkpoint.id === id)) {
         return {
             sucesso: false,
@@ -146,27 +212,26 @@ export function excluirCheckpoint(id) {
         return { sucesso: false, mensagem: "Checkpoint não encontrado." };
     }
 
+    await apiCheckpoints.excluirCheckpoint(id);
     checkpoints.splice(indice, 1);
-    salvarCheckpoints();
     return { sucesso: true, mensagem: "Checkpoint excluído com sucesso." };
 }
 
-export function excluirPassagem(id) {
+export async function excluirPassagem(id) {
     const indice = passagens.findIndex(passagem => passagem.id === id);
     if (indice === -1) {
         return { sucesso: false, mensagem: "Passagem não encontrada." };
     }
 
+    await apiPassagens.excluirPassagem(id);
     passagens.splice(indice, 1);
-    salvarPassagens();
     return { sucesso: true, mensagem: "Passagem excluída com sucesso." };
 }
 
-export function excluirCorrida(id) {
+export async function excluirCorrida(id) {
     const possuiEquipe = equipes.some(
         equipe => equipe.corrida?.id === id
     );
-
     const possuiCheckpoint = checkpoints.some(
         checkpoint => checkpoint.corrida?.id === id
     );
@@ -178,22 +243,12 @@ export function excluirCorrida(id) {
         };
     }
 
-    const indice = corridas.findIndex(
-        corrida => corrida.id === id
-    );
-
+    const indice = corridas.findIndex(corrida => corrida.id === id);
     if (indice === -1) {
-        return {
-            sucesso: false,
-            mensagem: "Corrida não encontrada."
-        };
+        return { sucesso: false, mensagem: "Corrida não encontrada." };
     }
 
+    await apiCorridas.excluirCorrida(id);
     corridas.splice(indice, 1);
-    salvarCorridas();
-
-    return {
-        sucesso: true,
-        mensagem: "Corrida excluída com sucesso."
-    };
+    return { sucesso: true, mensagem: "Corrida excluída com sucesso." };
 }

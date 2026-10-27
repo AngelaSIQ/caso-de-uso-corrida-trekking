@@ -1,5 +1,4 @@
 
-import { Checkpoint } from "../classes/checkpoint.js";
 import {
     criarItemCheckpoint,
     criarOpcaoCorrida,
@@ -9,7 +8,8 @@ import {
 import {
     corridas,
     checkpoints,
-    salvarCheckpoints,
+    carregarDados,
+    salvarCheckpoint,
     excluirCheckpoint
 } from "../dados/armazenamento.js";
 
@@ -61,20 +61,24 @@ function renderizar() {
 
                 campoNome.focus();
             },
-            aoExcluir: () => {
+            aoExcluir: async () => {
                 if (!confirm(`Excluir o checkpoint "${checkpoint.nome}"?`)) {
                     return;
                 }
 
-                const resultado = excluirCheckpoint(checkpoint.id);
-                avisar(resultado.mensagem);
-                renderizar();
+                try {
+                    const resultado = await excluirCheckpoint(checkpoint.id);
+                    avisar(resultado.mensagem);
+                    renderizar();
+                } catch (erro) {
+                    avisar("Erro ao excluir o checkpoint: " + erro.message);
+                }
             }
         }));
     });
 }
 
-formulario.addEventListener("submit", evento => {
+formulario.addEventListener("submit", async evento => {
     evento.preventDefault();
 
     try {
@@ -86,38 +90,28 @@ formulario.addEventListener("submit", evento => {
             throw new Error("Cadastre e selecione uma corrida primeiro.");
         }
 
-        if (idEditando === null) {
-            checkpoints.push(
-                new Checkpoint(
-                    campoNome.value,
-                    campoLocalizacao.value,
-                    corrida
-                )
-            );
-        } else {
-            const checkpoint = checkpoints.find(
-                c => c.id === idEditando
-            );
-
-            if (!checkpoint) {
-                throw new Error("Checkpoint não encontrado.");
-            }
-
-            checkpoint.nome = campoNome.value;
-            checkpoint.localizacao = campoLocalizacao.value;
-            checkpoint.corrida = corrida;
-        }
-
-        salvarCheckpoints();
+        await salvarCheckpoint(
+            idEditando,
+            campoNome.value,
+            campoLocalizacao.value,
+            corrida
+        );
         limparFormulario();
         renderizar();
         avisar("Checkpoint salvo com sucesso.");
     } catch (erro) {
+        console.error(erro);
         avisar(erro.message);
     }
 });
 
 botaoCancelar.addEventListener("click", limparFormulario);
 
-preencherCorridas();
-renderizar();
+try {
+    await carregarDados();
+    preencherCorridas();
+    renderizar();
+} catch (erro) {
+    console.error(erro);
+    avisar("Não foi possível carregar os checkpoints. Verifique se a API está em execução.");
+}

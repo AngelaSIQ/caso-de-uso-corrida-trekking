@@ -1,10 +1,10 @@
-import { Passagem } from "../classes/passagem.js";
 import {
     corridas,
     equipes,
     checkpoints,
     passagens,
-    salvarPassagens,
+    carregarDados,
+    salvarPassagem,
     excluirPassagem
 } from "../dados/armazenamento.js";
 import {
@@ -95,12 +95,16 @@ function renderizar() {
     passagens.forEach(passagem => {
         lista.appendChild(criarItemPassagem(passagem, {
             aoEditar: () => editarPassagem(passagem),
-            aoExcluir: () => {
+            aoExcluir: async () => {
                 if (!confirm("Deseja excluir esta passagem?")) return;
 
-                const resultado = excluirPassagem(passagem.id);
-                avisar(resultado.mensagem);
-                renderizar();
+                try {
+                    const resultado = await excluirPassagem(passagem.id);
+                    avisar(resultado.mensagem);
+                    renderizar();
+                } catch (erro) {
+                    avisar("Erro ao excluir a passagem: " + erro.message);
+                }
             }
         }));
     });
@@ -108,7 +112,7 @@ function renderizar() {
 
 campoCorrida.addEventListener("change", preencherAssociacoes);
 
-formulario.addEventListener("submit", evento => {
+formulario.addEventListener("submit", async evento => {
     evento.preventDefault();
 
     try {
@@ -128,34 +132,21 @@ formulario.addEventListener("submit", evento => {
             throw new Error("Selecione a equipe e o checkpoint.");
         }
 
-        const passagem = new Passagem(
-            equipe,
-            checkpoint,
-            campoDataHora.value,
-            idEditando
-        );
-
         if (equipe.corrida.id !== corridaId) {
             throw new Error("A equipe não pertence à corrida selecionada.");
         }
 
-        if (idEditando === null) {
-            passagens.push(passagem);
-        } else {
-            const indice = passagens.findIndex(
-                item => item.id === idEditando
-            );
-            if (indice === -1) {
-                throw new Error("Passagem não encontrada.");
-            }
-            passagens[indice] = passagem;
-        }
-
-        salvarPassagens();
+        await salvarPassagem(
+            idEditando,
+            equipe,
+            checkpoint,
+            campoDataHora.value
+        );
         limparFormulario();
         renderizar();
         avisar("Passagem salva com sucesso.");
     } catch (erro) {
+        console.error(erro);
         avisar(erro.message);
     }
 });
@@ -165,6 +156,12 @@ botaoCancelar.addEventListener("click", () => {
     avisar("");
 });
 
-preencherCorridas();
-preencherAssociacoes();
-renderizar();
+try {
+    await carregarDados();
+    preencherCorridas();
+    preencherAssociacoes();
+    renderizar();
+} catch (erro) {
+    console.error(erro);
+    avisar("Não foi possível carregar as passagens. Verifique se a API está em execução.");
+}

@@ -1,5 +1,4 @@
 
-import { Equipe } from "../classes/equipe.js";
 import {
     criarItemEquipe,
     criarOpcaoCorrida,
@@ -9,7 +8,8 @@ import {
 import {
     corridas,
     equipes,
-    salvarEquipes,
+    carregarDados,
+    salvarEquipe,
     excluirEquipe
 } from "../dados/armazenamento.js";
 
@@ -61,20 +61,24 @@ function renderizar() {
 
                 campoNome.focus();
             },
-            aoExcluir: () => {
+            aoExcluir: async () => {
                 if (!confirm(`Excluir a equipe "${equipe.nome}"?`)) {
                     return;
                 }
 
-                const resultado = excluirEquipe(equipe.id);
-                avisar(resultado.mensagem);
-                renderizar();
+                try {
+                    const resultado = await excluirEquipe(equipe.id);
+                    avisar(resultado.mensagem);
+                    renderizar();
+                } catch (erro) {
+                    avisar("Erro ao excluir a equipe: " + erro.message);
+                }
             }
         }));
     });
 }
 
-formulario.addEventListener("submit", evento => {
+formulario.addEventListener("submit", async evento => {
     evento.preventDefault();
 
     try {
@@ -86,36 +90,28 @@ formulario.addEventListener("submit", evento => {
             throw new Error("Cadastre e selecione uma corrida primeiro.");
         }
 
-        if (idEditando === null) {
-            equipes.push(
-                new Equipe(
-                    campoNome.value,
-                    campoIntegrantes.value,
-                    corrida
-                )
-            );
-        } else {
-            const equipe = equipes.find(e => e.id === idEditando);
-
-            if (!equipe) {
-                throw new Error("Equipe não encontrada.");
-            }
-
-            equipe.nome = campoNome.value;
-            equipe.integrantes = campoIntegrantes.value;
-            equipe.corrida = corrida;
-        }
-
-        salvarEquipes();
+        await salvarEquipe(
+            idEditando,
+            campoNome.value,
+            campoIntegrantes.value,
+            corrida
+        );
         limparFormulario();
         renderizar();
         avisar("Equipe salva com sucesso.");
     } catch (erro) {
+        console.error(erro);
         avisar(erro.message);
     }
 });
 
 botaoCancelar.addEventListener("click", limparFormulario);
 
-preencherCorridas();
-renderizar();
+try {
+    await carregarDados();
+    preencherCorridas();
+    renderizar();
+} catch (erro) {
+    console.error(erro);
+    avisar("Não foi possível carregar as equipes. Verifique se a API está em execução.");
+}

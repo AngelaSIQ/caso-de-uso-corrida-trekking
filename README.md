@@ -36,35 +36,43 @@ Os módulos `js/interface/corridas.js`, `js/interface/equipes.js` e
 componentes. `js/interface/passagens.js` faz o mesmo para registros de
 passagem, oferecendo seleções de equipe e checkpoint filtradas pela corrida.
 `js/interface/ranking.js` coordena a busca e a apresentação do ranking.
-`js/dados/armazenamento.js` mantém os registros no `localStorage`, reconstrói as
-associações entre entidades e impede excluir equipes ou checkpoints usados por
-passagens.
+`js/dados/armazenamento.js` consulta a API, reconstrói as associações entre
+entidades e impede excluir equipes ou checkpoints usados por passagens.
 
-## API Flask
+## API REST com JSON Server
 
-### Ambiente virtual
+A interface dos cadastros consulta a API REST do JSON Server. O arquivo
+`db.json` contém dados iniciais de corridas, equipes, checkpoints e passagens;
+as associações são armazenadas pelos campos `corridaId`, `equipeId` e
+`checkpointId`.
 
-```bash
-python -m venv venv
-source venv/bin/activate
-```
+### Instalação e execução
 
-No Windows, use `venv\Scripts\activate` para ativar o ambiente virtual.
-
-### Instalação
+Instale as dependências do projeto e inicie a API:
 
 ```bash
-pip install -r requirements.txt
+npm install
+npm run api
 ```
 
-### Execução
+O JSON Server ficará disponível em `http://localhost:3000`. Os recursos REST
+são `/corridas`, `/equipes`, `/checkpoints` e `/passagens`.
+
+Em outro terminal, sirva os arquivos da interface, por exemplo:
 
 ```bash
-flask run
+python -m http.server 8000
 ```
 
-A interface do sistema estará disponível em `http://127.0.0.1:5000/`. A API
-continua disponível nas rotas `/api/corridas`, `/api/checkpoints`,
-`/api/equipes` e `/api/passagens`.
+Abra `http://localhost:8000` no navegador. Mantenha os dois servidores em
+execução enquanto utiliza o sistema. Para verificar a API, acesse
+`http://localhost:3000/corridas` ou consulte os demais recursos. As operações
+de cadastro, edição e exclusão persistem diretamente no `db.json`.
 
-O ranking da corrida atual está disponível em `/api/corridas/<id>/status`.
+## Módulos da API
+
+`js/api/http.js` centraliza as requisições HTTP. Os módulos
+`js/api/corridas.js`, `js/api/equipes.js`, `js/api/checkpoints.js` e
+`js/api/passagens.js` expõem as operações de listar, cadastrar, atualizar e
+excluir. `js/dados/armazenamento.js` transforma as respostas em entidades do
+domínio e mantém as associações usadas pela interface.
