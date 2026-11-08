@@ -19,3 +19,7 @@ export async function requisicao(recurso, opcoes = {}) {
     if (resposta.status === 204) return null;
     return resposta.json();
 }
+
+
+
+// teste de envio

@@ -23,3 +23,7 @@ export function atualizarCheckpoint(id, checkpoint) {
 export function excluirCheckpoint(id) {
     return requisicao(`${RECURSO}/${id}`, { method: "DELETE" });
 }
+
+
+//aaaaaaaaaaaa
+// aaaaaaaaaaaaaaaaa
