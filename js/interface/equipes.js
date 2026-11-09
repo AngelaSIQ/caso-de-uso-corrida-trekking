@@ -53,7 +53,7 @@ function renderizar() {
             aoEditar: () => {
                 campoNome.value = equipe.nome;
                 campoIntegrantes.value = equipe.integrantes;
-                campoCorrida.value = equipe.corrida.id;
+                campoCorrida.value = String(equipe.corrida.id);
                 idEditando = equipe.id;
 
                 formulario.querySelector('[type="submit"]').textContent =
@@ -83,7 +83,7 @@ formulario.addEventListener("submit", async evento => {
 
     try {
         const corrida = corridas.find(
-            c => c.id === Number(campoCorrida.value)
+            c => String(c.id) === String(campoCorrida.value)
         );
 
         if (!corrida) {

@@ -13,7 +13,7 @@ export class Passagem {
             );
         }
 
-        if (equipe.corrida?.id !== checkpoint.corrida?.id) {
+        if (String(equipe.corrida?.id) !== String(checkpoint.corrida?.id)) {
             throw new Error(
                 "A equipe e o checkpoint devem pertencer à mesma corrida."
             );
@@ -28,7 +28,7 @@ export class Passagem {
         this.#checkpoint = checkpoint;
         this.#dataHora = dataHora;
 
-        if (id !== null && id >= Passagem.proximoId) {
+        if (typeof id === "number" && Number.isFinite(id) && id >= Passagem.proximoId) {
             Passagem.proximoId = id + 1;
         }
     }

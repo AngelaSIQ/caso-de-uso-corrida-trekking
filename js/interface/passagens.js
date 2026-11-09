@@ -39,8 +39,10 @@ function preencherCorridas() {
 }
 
 function preencherAssociacoes() {
-    const corridaId = Number(campoCorrida.value);
-    const corridaSelecionada = corridas.some(corrida => corrida.id === corridaId);
+    const corridaId = campoCorrida.value;
+    const corridaSelecionada = corridas.some(
+        corrida => String(corrida.id) === String(corridaId)
+    );
 
     campoEquipe.replaceChildren(criarOpcaoSelecione("Selecione uma equipe"));
     campoCheckpoint.replaceChildren(
@@ -53,11 +55,11 @@ function preencherAssociacoes() {
     if (!corridaSelecionada) return;
 
     equipes
-        .filter(equipe => equipe.corrida?.id === corridaId)
+        .filter(equipe => String(equipe.corrida?.id) === String(corridaId))
         .forEach(equipe => campoEquipe.appendChild(criarOpcaoEquipe(equipe)));
 
     checkpoints
-        .filter(checkpoint => checkpoint.corrida?.id === corridaId)
+        .filter(checkpoint => String(checkpoint.corrida?.id) === String(corridaId))
         .forEach(checkpoint =>
             campoCheckpoint.appendChild(criarOpcaoCheckpoint(checkpoint))
         );
@@ -73,10 +75,10 @@ function limparFormulario() {
 
 function editarPassagem(passagem) {
     const corridaId = passagem.equipe.corrida.id;
-    campoCorrida.value = corridaId;
+    campoCorrida.value = String(corridaId);
     preencherAssociacoes();
-    campoEquipe.value = passagem.equipe.id;
-    campoCheckpoint.value = passagem.checkpoint.id;
+    campoEquipe.value = String(passagem.equipe.id);
+    campoCheckpoint.value = String(passagem.checkpoint.id);
     campoDataHora.value = passagem.dataHora;
     idEditando = passagem.id;
     formulario.querySelector('[type="submit"]').textContent =
@@ -116,15 +118,15 @@ formulario.addEventListener("submit", async evento => {
     evento.preventDefault();
 
     try {
-        const corridaId = Number(campoCorrida.value);
+        const corridaId = campoCorrida.value;
         const equipe = equipes.find(
-            item => item.id === Number(campoEquipe.value)
+            item => String(item.id) === String(campoEquipe.value)
         );
         const checkpoint = checkpoints.find(
-            item => item.id === Number(campoCheckpoint.value)
+            item => String(item.id) === String(campoCheckpoint.value)
         );
 
-        if (!corridas.some(corrida => corrida.id === corridaId)) {
+        if (!corridas.some(corrida => String(corrida.id) === String(corridaId))) {
             throw new Error("Selecione uma corrida.");
         }
 
@@ -132,7 +134,7 @@ formulario.addEventListener("submit", async evento => {
             throw new Error("Selecione a equipe e o checkpoint.");
         }
 
-        if (equipe.corrida.id !== corridaId) {
+        if (String(equipe.corrida.id) !== String(corridaId)) {
             throw new Error("A equipe não pertence à corrida selecionada.");
         }
 

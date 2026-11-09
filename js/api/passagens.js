@@ -14,12 +14,12 @@ export function cadastrarPassagem(passagem) {
 }
 
 export function atualizarPassagem(id, passagem) {
-    return requisicao(`${RECURSO}/${id}`, {
+    return requisicao(`${RECURSO}/${encodeURIComponent(id)}`, {
         method: "PUT",
         body: JSON.stringify(passagem)
     });
 }
 
 export function excluirPassagem(id) {
-    return requisicao(`${RECURSO}/${id}`, { method: "DELETE" });
+    return requisicao(`${RECURSO}/${encodeURIComponent(id)}`, { method: "DELETE" });
 }

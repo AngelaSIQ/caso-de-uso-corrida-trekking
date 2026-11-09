@@ -25,21 +25,21 @@ function criarItemComAcoes(descricaoTexto, aoEditar, aoExcluir) {
 
 export function criarOpcaoCorrida(corrida) {
     const opcao = document.createElement("option");
-    opcao.value = corrida.id;
+    opcao.value = String(corrida.id);
     opcao.textContent = corrida.nome;
     return opcao;
 }
 
 export function criarOpcaoEquipe(equipe) {
     const opcao = document.createElement("option");
-    opcao.value = equipe.id;
+    opcao.value = String(equipe.id);
     opcao.textContent = equipe.nome;
     return opcao;
 }
 
 export function criarOpcaoCheckpoint(checkpoint) {
     const opcao = document.createElement("option");
-    opcao.value = checkpoint.id;
+    opcao.value = String(checkpoint.id);
     opcao.textContent = checkpoint.nome;
     return opcao;
 }

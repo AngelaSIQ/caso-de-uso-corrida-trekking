@@ -14,12 +14,12 @@ export function cadastrarCheckpoint(checkpoint) {
 }
 
 export function atualizarCheckpoint(id, checkpoint) {
-    return requisicao(`${RECURSO}/${id}`, {
+    return requisicao(`${RECURSO}/${encodeURIComponent(id)}`, {
         method: "PUT",
         body: JSON.stringify(checkpoint)
     });
 }
 
 export function excluirCheckpoint(id) {
-    return requisicao(`${RECURSO}/${id}`, { method: "DELETE" });
+    return requisicao(`${RECURSO}/${encodeURIComponent(id)}`, { method: "DELETE" });
 }

@@ -16,6 +16,10 @@ function substituirConteudo(lista, novosDados) {
     lista.splice(0, lista.length, ...novosDados);
 }
 
+function compararIds(a, b) {
+    return String(a) === String(b);
+}
+
 export async function carregarDados() {
     const [dadosCorridas, dadosEquipes, dadosCheckpoints, dadosPassagens] =
         await Promise.all([
@@ -26,27 +30,24 @@ export async function carregarDados() {
         ]);
 
     const novasCorridas = dadosCorridas.map(
-        dados => new Corrida(dados.nome, dados.data, Number(dados.id))
+        dados => new Corrida(dados.nome, dados.data, dados.id)
     );
+
     const novasEquipes = dadosEquipes.map(dados => {
         const corrida = novasCorridas.find(
-            item => item.id === Number(dados.corridaId)
+            item => compararIds(item.id, dados.corridaId)
         );
 
         if (!corrida) {
             throw new Error(`Corrida da equipe "${dados.nome}" não encontrada.`);
         }
 
-        return new Equipe(
-            dados.nome,
-            dados.integrantes,
-            corrida,
-            Number(dados.id)
-        );
+        return new Equipe(dados.nome, dados.integrantes, corrida, dados.id);
     });
+
     const novosCheckpoints = dadosCheckpoints.map(dados => {
         const corrida = novasCorridas.find(
-            item => item.id === Number(dados.corridaId)
+            item => compararIds(item.id, dados.corridaId)
         );
 
         if (!corrida) {
@@ -55,19 +56,15 @@ export async function carregarDados() {
             );
         }
 
-        return new Checkpoint(
-            dados.nome,
-            dados.localizacao,
-            corrida,
-            Number(dados.id)
-        );
+        return new Checkpoint(dados.nome, dados.localizacao, corrida, dados.id);
     });
+
     const novasPassagens = dadosPassagens.map(dados => {
         const equipe = novasEquipes.find(
-            item => item.id === Number(dados.equipeId)
+            item => compararIds(item.id, dados.equipeId)
         );
         const checkpoint = novosCheckpoints.find(
-            item => item.id === Number(dados.checkpointId)
+            item => compararIds(item.id, dados.checkpointId)
         );
 
         if (!equipe || !checkpoint) {
@@ -76,12 +73,7 @@ export async function carregarDados() {
             );
         }
 
-        return new Passagem(
-            equipe,
-            checkpoint,
-            dados.dataHora,
-            Number(dados.id)
-        );
+        return new Passagem(equipe, checkpoint, dados.dataHora, dados.id);
     });
 
     substituirConteudo(corridas, novasCorridas);
@@ -93,13 +85,13 @@ export async function carregarDados() {
 export async function salvarCorrida(id, nome, data) {
     if (id === null) {
         const dados = await apiCorridas.cadastrarCorrida({ nome, data });
-        const corrida = new Corrida(dados.nome, dados.data, Number(dados.id));
+        const corrida = new Corrida(dados.nome, dados.data, dados.id);
         corridas.push(corrida);
         return corrida;
     }
 
     await apiCorridas.atualizarCorrida(id, { nome, data });
-    const corrida = corridas.find(item => item.id === id);
+    const corrida = corridas.find(item => compararIds(item.id, id));
     if (!corrida) throw new Error("Corrida não encontrada.");
     corrida.nome = nome;
     corrida.data = data;
@@ -115,14 +107,14 @@ export async function salvarEquipe(id, nome, integrantes, corrida) {
             resposta.nome,
             resposta.integrantes,
             corrida,
-            Number(resposta.id)
+            resposta.id
         );
         equipes.push(equipe);
         return equipe;
     }
 
     await apiEquipes.atualizarEquipe(id, dados);
-    const equipe = equipes.find(item => item.id === id);
+    const equipe = equipes.find(item => compararIds(item.id, id));
     if (!equipe) throw new Error("Equipe não encontrada.");
     equipe.nome = nome;
     equipe.integrantes = integrantes;
@@ -139,14 +131,14 @@ export async function salvarCheckpoint(id, nome, localizacao, corrida) {
             resposta.nome,
             resposta.localizacao,
             corrida,
-            Number(resposta.id)
+            resposta.id
         );
         checkpoints.push(checkpoint);
         return checkpoint;
     }
 
     await apiCheckpoints.atualizarCheckpoint(id, dados);
-    const checkpoint = checkpoints.find(item => item.id === id);
+    const checkpoint = checkpoints.find(item => compararIds(item.id, id));
     if (!checkpoint) throw new Error("Checkpoint não encontrado.");
     checkpoint.nome = nome;
     checkpoint.localizacao = localizacao;
@@ -155,6 +147,7 @@ export async function salvarCheckpoint(id, nome, localizacao, corrida) {
 }
 
 export async function salvarPassagem(id, equipe, checkpoint, dataHora) {
+    const passagemValidada = new Passagem(equipe, checkpoint, dataHora, id);
     const dados = {
         equipeId: equipe.id,
         checkpointId: checkpoint.id,
@@ -167,29 +160,28 @@ export async function salvarPassagem(id, equipe, checkpoint, dataHora) {
             equipe,
             checkpoint,
             resposta.dataHora,
-            Number(resposta.id)
+            resposta.id
         );
         passagens.push(passagem);
         return passagem;
     }
 
     await apiPassagens.atualizarPassagem(id, dados);
-    const indice = passagens.findIndex(item => item.id === id);
+    const indice = passagens.findIndex(item => compararIds(item.id, id));
     if (indice === -1) throw new Error("Passagem não encontrada.");
-    const passagem = new Passagem(equipe, checkpoint, dataHora, id);
-    passagens.splice(indice, 1, passagem);
-    return passagem;
+    passagens.splice(indice, 1, passagemValidada);
+    return passagemValidada;
 }
 
 export async function excluirEquipe(id) {
-    if (passagens.some(passagem => passagem.equipe.id === id)) {
+    if (passagens.some(passagem => compararIds(passagem.equipe.id, id))) {
         return {
             sucesso: false,
             mensagem: "Não é possível excluir esta equipe, pois existem passagens associadas a ela."
         };
     }
 
-    const indice = equipes.findIndex(equipe => equipe.id === id);
+    const indice = equipes.findIndex(equipe => compararIds(equipe.id, id));
     if (indice === -1) {
         return { sucesso: false, mensagem: "Equipe não encontrada." };
     }
@@ -200,14 +192,14 @@ export async function excluirEquipe(id) {
 }
 
 export async function excluirCheckpoint(id) {
-    if (passagens.some(passagem => passagem.checkpoint.id === id)) {
+    if (passagens.some(passagem => compararIds(passagem.checkpoint.id, id))) {
         return {
             sucesso: false,
             mensagem: "Não é possível excluir este checkpoint, pois existem passagens associadas a ele."
         };
     }
 
-    const indice = checkpoints.findIndex(checkpoint => checkpoint.id === id);
+    const indice = checkpoints.findIndex(checkpoint => compararIds(checkpoint.id, id));
     if (indice === -1) {
         return { sucesso: false, mensagem: "Checkpoint não encontrado." };
     }
@@ -218,7 +210,7 @@ export async function excluirCheckpoint(id) {
 }
 
 export async function excluirPassagem(id) {
-    const indice = passagens.findIndex(passagem => passagem.id === id);
+    const indice = passagens.findIndex(passagem => compararIds(passagem.id, id));
     if (indice === -1) {
         return { sucesso: false, mensagem: "Passagem não encontrada." };
     }
@@ -230,10 +222,10 @@ export async function excluirPassagem(id) {
 
 export async function excluirCorrida(id) {
     const possuiEquipe = equipes.some(
-        equipe => equipe.corrida?.id === id
+        equipe => compararIds(equipe.corrida?.id, id)
     );
     const possuiCheckpoint = checkpoints.some(
-        checkpoint => checkpoint.corrida?.id === id
+        checkpoint => compararIds(checkpoint.corrida?.id, id)
     );
 
     if (possuiEquipe || possuiCheckpoint) {
@@ -243,7 +235,7 @@ export async function excluirCorrida(id) {
         };
     }
 
-    const indice = corridas.findIndex(corrida => corrida.id === id);
+    const indice = corridas.findIndex(corrida => compararIds(corrida.id, id));
     if (indice === -1) {
         return { sucesso: false, mensagem: "Corrida não encontrada." };
     }
