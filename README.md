@@ -103,4 +103,4 @@ Os testes automatizados e a verificação do servidor real foram executados; o r
 A integração usa `fetch` e `async/await`, separa a comunicação da interface e apresenta mensagens compreensíveis para falhas de conexão e respostas HTTP de erro.
 
 - Repositório: https://github.com/AngelaSIQ/caso-de-uso-corrida-trekking
-- Branch da atividade: `capitulo-7-api-rest`
+- Branch da atividade: `frontendv.5`
