@@ -20,7 +20,7 @@ export class Checkpoint {
         this.#localizacao = localizacao;
         this.#corrida = corrida;
 
-        if (id !== null && id >= Checkpoint.proximoId) {
+        if (typeof id === "number" && Number.isFinite(id) && id >= Checkpoint.proximoId) {
             Checkpoint.proximoId = id + 1;
         }
     }

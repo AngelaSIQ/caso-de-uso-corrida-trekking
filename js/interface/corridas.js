@@ -1,8 +1,12 @@
-import { Corrida } from "../classes/corrida.js";
+import {
+    criarEstadoVazio,
+    criarItemCorrida
+} from "./componentes.js";
 
 import {
     corridas,
-    salvarCorridas,
+    carregarDados,
+    salvarCorrida,
     excluirCorrida
 } from "../dados/armazenamento.js";
 
@@ -31,54 +35,40 @@ function renderizar() {
     lista.replaceChildren();
 
     if (corridas.length === 0) {
-        const item = document.createElement("li");
-        item.textContent = "Nenhuma corrida cadastrada.";
-        lista.appendChild(item);
+        lista.appendChild(criarEstadoVazio("Nenhuma corrida cadastrada."));
         return;
     }
 
     corridas.forEach(corrida => {
-        const item = document.createElement("li");
+        lista.appendChild(criarItemCorrida(corrida, {
+            aoEditar: () => {
+                campoNome.value = corrida.nome;
+                campoData.value = corrida.data ?? "";
+                idEditando = corrida.id;
 
-        const descricao = document.createElement("span");
-        descricao.textContent =
-            `${corrida.nome} — ${corrida.data || "Sem data"} `;
+                formulario.querySelector('[type="submit"]').textContent =
+                    "Salvar alterações";
 
-        const editar = document.createElement("button");
-        editar.type = "button";
-        editar.textContent = "Editar";
+                campoNome.focus();
+            },
+            aoExcluir: async () => {
+                if (!confirm(`Deseja excluir a corrida "${corrida.nome}"?`)) {
+                    return;
+                }
 
-        editar.addEventListener("click", () => {
-            campoNome.value = corrida.nome;
-            campoData.value = corrida.data ?? "";
-            idEditando = corrida.id;
-
-            formulario.querySelector('[type="submit"]').textContent =
-                "Salvar alterações";
-
-            campoNome.focus();
-        });
-
-        const excluir = document.createElement("button");
-        excluir.type = "button";
-        excluir.textContent = "Excluir";
-
-        excluir.addEventListener("click", () => {
-            if (!confirm(`Deseja excluir a corrida "${corrida.nome}"?`)) {
-                return;
+                try {
+                    const resultado = await excluirCorrida(corrida.id);
+                    avisar(resultado.mensagem);
+                    renderizar();
+                } catch (erro) {
+                    avisar("Erro ao excluir a corrida: " + erro.message);
+                }
             }
-
-            const resultado = excluirCorrida(corrida.id);
-            avisar(resultado.mensagem);
-            renderizar();
-        });
-
-        item.append(descricao, editar, excluir);
-        lista.appendChild(item);
+        }));
     });
 }
 
-formulario.addEventListener("submit", evento => {
+formulario.addEventListener("submit", async evento => {
     evento.preventDefault();
 
     const nome = campoNome.value.trim();
@@ -90,22 +80,7 @@ formulario.addEventListener("submit", evento => {
     }
 
     try {
-        if (idEditando === null) {
-            corridas.push(new Corrida(nome, data));
-        } else {
-            const corrida = corridas.find(
-                item => item.id === idEditando
-            );
-
-            if (!corrida) {
-                throw new Error("Corrida não encontrada.");
-            }
-
-            corrida.nome = nome;
-            corrida.data = data;
-        }
-
-        salvarCorridas();
+        await salvarCorrida(idEditando, nome, data);
         limparFormulario();
         renderizar();
         avisar("Corrida salva com sucesso!");
@@ -120,4 +95,10 @@ botaoCancelar.addEventListener("click", () => {
     avisar("");
 });
 
-renderizar();
+try {
+    await carregarDados();
+    renderizar();
+} catch (erro) {
+    console.error(erro);
+    avisar("Não foi possível carregar as corridas. Verifique se a API está em execução.");
+}

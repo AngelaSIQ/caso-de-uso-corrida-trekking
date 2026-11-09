@@ -1,19 +1,25 @@
 
-import { Equipe } from "/classes/equipe.js";
+import {
+    criarItemEquipe,
+    criarOpcaoCorrida,
+    criarOpcaoSelecioneCorrida
+} from "./componentes.js";
 
 import {
     corridas,
     equipes,
-    salvarEquipes,
+    carregarDados,
+    salvarEquipe,
     excluirEquipe
 } from "../dados/armazenamento.js";
 
 const formulario = document.getElementById("form-equipe");
 const campoNome = document.getElementById("nome");
 const campoIntegrantes = document.getElementById("integrantes");
-const campoCorrida = document.getElementById("corrida");
+const campoCorrida = document.getElementById("corridaId");
 const lista = document.getElementById("lista-equipes");
 const mensagem = document.getElementById("mensagem");
+const avisoCorridas = document.getElementById("aviso-corridas");
 const botaoCancelar = document.getElementById("cancelar");
 
 let idEditando = null;
@@ -23,18 +29,11 @@ function avisar(texto) {
 }
 
 function preencherCorridas() {
-    campoCorrida.replaceChildren();
-
-    const inicial = document.createElement("option");
-    inicial.value = "";
-    inicial.textContent = "Selecione uma corrida";
-    campoCorrida.appendChild(inicial);
+    campoCorrida.replaceChildren(criarOpcaoSelecioneCorrida());
+    avisoCorridas.hidden = corridas.length > 0;
 
     corridas.forEach(corrida => {
-        const opcao = document.createElement("option");
-        opcao.value = corrida.id;
-        opcao.textContent = corrida.nome;
-        campoCorrida.appendChild(opcao);
+        campoCorrida.appendChild(criarOpcaoCorrida(corrida));
     });
 }
 
@@ -50,89 +49,69 @@ function renderizar() {
     lista.replaceChildren();
 
     equipes.forEach(equipe => {
-        const item = document.createElement("li");
-        const descricao = document.createElement("span");
+        lista.appendChild(criarItemEquipe(equipe, {
+            aoEditar: () => {
+                campoNome.value = equipe.nome;
+                campoIntegrantes.value = equipe.integrantes;
+                campoCorrida.value = String(equipe.corrida.id);
+                idEditando = equipe.id;
 
-        descricao.textContent =
-            `${equipe.nome} — ${equipe.integrantes} — Corrida: ${equipe.corrida.nome} `;
+                formulario.querySelector('[type="submit"]').textContent =
+                    "Salvar alterações";
 
-        const editar = document.createElement("button");
-        editar.type = "button";
-        editar.textContent = "Editar";
+                campoNome.focus();
+            },
+            aoExcluir: async () => {
+                if (!confirm(`Excluir a equipe "${equipe.nome}"?`)) {
+                    return;
+                }
 
-        editar.addEventListener("click", () => {
-            campoNome.value = equipe.nome;
-            campoIntegrantes.value = equipe.integrantes;
-            campoCorrida.value = equipe.corrida.id;
-            idEditando = equipe.id;
-
-            formulario.querySelector('[type="submit"]').textContent =
-                "Salvar alterações";
-
-            campoNome.focus();
-        });
-
-        const excluir = document.createElement("button");
-        excluir.type = "button";
-        excluir.textContent = "Excluir";
-
-        excluir.addEventListener("click", () => {
-            if (!confirm(`Excluir a equipe "${equipe.nome}"?`)) {
-                return;
+                try {
+                    const resultado = await excluirEquipe(equipe.id);
+                    avisar(resultado.mensagem);
+                    renderizar();
+                } catch (erro) {
+                    avisar("Erro ao excluir a equipe: " + erro.message);
+                }
             }
-
-            const resultado = excluirEquipe(equipe.id);
-            avisar(resultado.mensagem);
-            renderizar();
-        });
-
-        item.append(descricao, editar, excluir);
-        lista.appendChild(item);
+        }));
     });
 }
 
-formulario.addEventListener("submit", evento => {
+formulario.addEventListener("submit", async evento => {
     evento.preventDefault();
 
     try {
         const corrida = corridas.find(
-            c => c.id === Number(campoCorrida.value)
+            c => String(c.id) === String(campoCorrida.value)
         );
 
         if (!corrida) {
             throw new Error("Cadastre e selecione uma corrida primeiro.");
         }
 
-        if (idEditando === null) {
-            equipes.push(
-                new Equipe(
-                    campoNome.value,
-                    campoIntegrantes.value,
-                    corrida
-                )
-            );
-        } else {
-            const equipe = equipes.find(e => e.id === idEditando);
-
-            if (!equipe) {
-                throw new Error("Equipe não encontrada.");
-            }
-
-            equipe.nome = campoNome.value;
-            equipe.integrantes = campoIntegrantes.value;
-            equipe.corrida = corrida;
-        }
-
-        salvarEquipes();
+        await salvarEquipe(
+            idEditando,
+            campoNome.value,
+            campoIntegrantes.value,
+            corrida
+        );
         limparFormulario();
         renderizar();
         avisar("Equipe salva com sucesso.");
     } catch (erro) {
+        console.error(erro);
         avisar(erro.message);
     }
 });
 
 botaoCancelar.addEventListener("click", limparFormulario);
 
-preencherCorridas();
-renderizar();
+try {
+    await carregarDados();
+    preencherCorridas();
+    renderizar();
+} catch (erro) {
+    console.error(erro);
+    avisar("Não foi possível carregar as equipes. Verifique se a API está em execução.");
+}

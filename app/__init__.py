@@ -1,6 +1,8 @@
 """Configuração e fábrica da aplicação Flask."""
 
-from flask import Flask
+from pathlib import Path
+
+from flask import Flask, abort, send_from_directory
 from flask_cors import CORS
 
 from app.database import db
@@ -28,7 +30,23 @@ def create_app():
 
 	@application.get("/")
 	def index():
-		return {"mensagem": "API de Controle de Checkpoints em Corridas de Trekking"}
+		project_root = Path(application.root_path).parent
+		return send_from_directory(project_root, "index.html")
+
+	@application.get("/<path:filename>")
+	def frontend_file(filename):
+		pages = {
+			"index.html",
+			"corridas.html",
+			"equipes.html",
+			"checkpoints.html",
+			"passagens.html",
+		}
+		if filename not in pages and not filename.startswith(("css/", "js/")):
+			abort(404)
+
+		project_root = Path(application.root_path).parent
+		return send_from_directory(project_root, filename)
 
 	return application
 

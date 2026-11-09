@@ -14,7 +14,7 @@ export class Corrida {
         this.#nome = nome;
         this.#data = data;
 
-        if (id !== null && id >= Corrida.proximoId) {
+        if (typeof id === "number" && Number.isFinite(id) && id >= Corrida.proximoId) {
             Corrida.proximoId = id + 1;
         }
     }

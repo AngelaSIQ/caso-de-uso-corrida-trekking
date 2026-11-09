@@ -1,0 +1,74 @@
+{
+  "corridas": [
+    {
+      "id": "corr-001",
+      "nome": "Trekking Serra Verde",
+      "data": "2026-11-15"
+    },
+    {
+      "id": "corr-002",
+      "nome": "Desafio da Pedra Azul",
+      "data": "2026-11-22"
+    }
+  ],
+  "equipes": [
+    {
+      "id": "eq-001",
+      "nome": "Trilheiros do Norte",
+      "integrantes": "Ana, Bruno e Caio",
+      "corridaId": "corr-001"
+    },
+    {
+      "id": "eq-002",
+      "nome": "Passo a Passo",
+      "integrantes": "Diana, Eduardo e Fátima",
+      "corridaId": "corr-001"
+    },
+    {
+      "id": "eq-003",
+      "nome": "Rota da Montanha",
+      "integrantes": "Gisele, Hugo e Ivo",
+      "corridaId": "corr-002"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "cp-001",
+      "nome": "Lagoa",
+      "localizacao": "Margem da Lagoa Azul",
+      "corridaId": "corr-001"
+    },
+    {
+      "id": "cp-002",
+      "nome": "Mirante",
+      "localizacao": "Topo da Serra",
+      "corridaId": "corr-001"
+    },
+    {
+      "id": "cp-003",
+      "nome": "Cachoeira",
+      "localizacao": "Base da queda d'água",
+      "corridaId": "corr-002"
+    }
+  ],
+  "passagens": [
+    {
+      "id": "pass-001",
+      "equipeId": "eq-001",
+      "checkpointId": "cp-001",
+      "dataHora": "2026-11-15T08:15"
+    },
+    {
+      "id": "pass-002",
+      "equipeId": "eq-002",
+      "checkpointId": "cp-002",
+      "dataHora": "2026-11-15T09:05"
+    },
+    {
+      "id": "pass-003",
+      "equipeId": "eq-003",
+      "checkpointId": "cp-003",
+      "dataHora": "2026-11-22T07:40"
+    }
+  ]
+}

@@ -16,7 +16,7 @@ export class Equipe {
         this.#integrantes = integrantes;
         this.#corrida = corrida;
 
-        if (id !== null && id >= Equipe.proximoId) {
+        if (typeof id === "number" && Number.isFinite(id) && id >= Equipe.proximoId) {
             Equipe.proximoId = id + 1;
         }
     }
