@@ -14,12 +14,12 @@ export function cadastrarCorrida(corrida) {
 }
 
 export function atualizarCorrida(id, corrida) {
-    return requisicao(`${RECURSO}/${id}`, {
+    return requisicao(`${RECURSO}/${encodeURIComponent(id)}`, {
         method: "PUT",
         body: JSON.stringify(corrida)
     });
 }
 
 export function excluirCorrida(id) {
-    return requisicao(`${RECURSO}/${id}`, { method: "DELETE" });
+    return requisicao(`${RECURSO}/${encodeURIComponent(id)}`, { method: "DELETE" });
 }

@@ -53,7 +53,7 @@ function renderizar() {
             aoEditar: () => {
                 campoNome.value = checkpoint.nome;
                 campoLocalizacao.value = checkpoint.localizacao;
-                campoCorrida.value = checkpoint.corrida.id;
+                campoCorrida.value = String(checkpoint.corrida.id);
                 idEditando = checkpoint.id;
 
                 formulario.querySelector('[type="submit"]').textContent =
@@ -83,7 +83,7 @@ formulario.addEventListener("submit", async evento => {
 
     try {
         const corrida = corridas.find(
-            c => c.id === Number(campoCorrida.value)
+            c => String(c.id) === String(campoCorrida.value)
         );
 
         if (!corrida) {

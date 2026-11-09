@@ -14,12 +14,12 @@ export function cadastrarEquipe(equipe) {
 }
 
 export function atualizarEquipe(id, equipe) {
-    return requisicao(`${RECURSO}/${id}`, {
+    return requisicao(`${RECURSO}/${encodeURIComponent(id)}`, {
         method: "PUT",
         body: JSON.stringify(equipe)
     });
 }
 
 export function excluirEquipe(id) {
-    return requisicao(`${RECURSO}/${id}`, { method: "DELETE" });
+    return requisicao(`${RECURSO}/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
