@@ -80,9 +80,23 @@ Ela valida:
 - rejeição de passagem entre equipe e checkpoint de corridas diferentes;
 - tratamento de falha de rede e de resposta HTTP de erro, sem alterar o estado local.
 
-Também é possível verificar os recursos diretamente em `http://localhost:3000/corridas`, `/equipes`, `/checkpoints` e `/passagens`. Para testar a interface, abra cada página pelo servidor web e execute o cadastro, a edição e a exclusão, observando as respostas da API e o arquivo `db.json`.
+### Registro dos testes executados
 
-Resultado validado: todos os cenários automatizados passam. Além da suíte, o JSON Server real foi testado com uma base temporária: GET, POST, PUT e DELETE funcionaram, preservando um ID textual. Os quatro recursos da base do projeto também responderam com HTTP 200 (2 corridas, 3 equipes, 3 checkpoints e 3 passagens). Os testes automatizados usam uma API simulada e não alteram o `db.json` do projeto.
+- `npm test`: 4 testes aprovados. A suíte cobre carregamento, IDs textuais, CRUD das quatro entidades, associações, regras de exclusão, validação de passagem e falhas de rede/HTTP.
+- JSON Server 0.17.4 com uma base temporária: GET, POST, PUT e DELETE aprovados; o ID textual foi mantido e as alterações foram persistidas no arquivo temporário.
+- Os testes automatizados usam uma API simulada para não modificar o `db.json` do projeto. O teste do JSON Server também usa uma cópia temporária.
+
+### Roteiro manual da interface
+
+Em dois terminais, execute `npm run api` e `npm run web`. Abra `http://localhost:8000` e confira os cenários abaixo. As respostas da API podem ser consultadas em `http://localhost:3000/corridas`, `http://localhost:3000/equipes`, `http://localhost:3000/checkpoints` e `http://localhost:3000/passagens`.
+
+1. Abra as páginas de corridas, equipes, checkpoints e passagens; confirme que os registros do `db.json` aparecem.
+2. Cadastre uma corrida e confira o novo registro na resposta `GET /corridas`; em seguida edite e exclua essa corrida.
+3. Cadastre equipe e checkpoint vinculados à mesma corrida, registre uma passagem entre eles e confira os IDs associados em `GET /passagens`.
+4. Edite e exclua a passagem. Tente excluir equipe/checkpoint com passagem vinculada e corrida com equipe ou checkpoint; a interface deve informar que a regra impede a exclusão. Depois exclua os registros sem dependências.
+5. Com o servidor web ainda ativo, interrompa o JSON Server, recarregue uma página e tente salvar um registro; a interface deve exibir uma mensagem de falha compreensível. Reinicie o JSON Server e confirme que a aplicação volta a carregar.
+
+Os testes automatizados e a verificação do servidor real foram executados; o roteiro acima registra como conferir manualmente as páginas no navegador.
 
 ## Entrega
 
