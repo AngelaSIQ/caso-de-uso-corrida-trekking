@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Cadastro de Passagens</title>
+	<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body data-page="passagens">
+	<header>
+		<h1>Sistema de Corridas de Trekking</h1>
+		<nav aria-label="Navegação principal">
+			<a href="index.html">Início</a>
+			<a href="corridas.html">Corridas</a>
+			<a href="equipes.html">Equipes</a>
+			<a href="checkpoints.html">Checkpoints</a>
+			<a href="passagens.html" aria-current="page">Passagens</a>
+		</nav>
+	</header>
+
+	<main>
+		<h2>Registrar passagem</h2>
+
+		<form id="form-passagem">
+			<label for="corrida">Corrida:</label>
+			<select id="corrida" required></select>
+
+			<label for="equipe">Equipe:</label>
+			<select id="equipe" required disabled></select>
+
+			<label for="checkpoint">Checkpoint:</label>
+			<select id="checkpoint" required disabled></select>
+
+			<label for="dataHora">Data e hora:</label>
+			<input type="datetime-local" id="dataHora" required>
+
+			<button type="submit">Registrar passagem</button>
+			<button type="button" id="cancelar">Cancelar</button>
+		</form>
+
+		<p id="mensagem" aria-live="polite"></p>
+
+		<h2>Passagens registradas</h2>
+		<ul id="lista-passagens"></ul>
+	</main>
+
+	<script type="module" src="js/interface/passagens.js"></script>
+</body>
+</html>
