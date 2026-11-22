@@ -1,74 +1,83 @@
 from flask import Blueprint, jsonify, request
 
 from app.database import db
-from app.models import Checkpoint
+from app.models import Checkpoint, Corrida
 
 checkpoint_bp = Blueprint("checkpoints", __name__, url_prefix="/api/checkpoints")
 
 
-def checkpoint_json(checkpoint):
+def to_json(checkpoint):
     return {
         "id": checkpoint.id,
-        "identificacao_local": checkpoint.identificacao_local,
-        "professor_responsavel": checkpoint.professor_responsavel,
-        "ordem": checkpoint.ordem,
-        "corrida_id": checkpoint.corrida_id,
+        "nome": checkpoint.nome,
+        "localizacao": checkpoint.localizacao,
+        "corridaId": checkpoint.corrida_id,
     }
 
 
+def validar(dados):
+    if not str(dados.get("nome", "")).strip():
+        return "Informe o nome do checkpoint."
+    try:
+        corrida = db.session.get(Corrida, int(dados.get("corridaId")))
+    except (TypeError, ValueError):
+        return "Selecione uma corrida."
+    if not corrida:
+        return "Corrida não encontrada."
+    return None
+
+
 @checkpoint_bp.get("")
-def listar_checkpoints():
-    return jsonify([checkpoint_json(item) for item in Checkpoint.query.order_by(Checkpoint.ordem).all()])
-
-
-@checkpoint_bp.get("/<int:checkpoint_id>")
-def buscar_checkpoint(checkpoint_id):
-    checkpoint = db.session.get(Checkpoint, checkpoint_id)
-    if not checkpoint:
-        return jsonify({"erro": "Checkpoint não encontrado"}), 404
-    return jsonify(checkpoint_json(checkpoint))
+def listar():
+    return jsonify([to_json(c) for c in Checkpoint.query.all()])
 
 
 @checkpoint_bp.post("")
-def criar_checkpoint():
+def criar():
     dados = request.get_json() or {}
-    try:
-        checkpoint = Checkpoint(
-            identificacao_local=dados["identificacao_local"],
-            professor_responsavel=dados["professor_responsavel"],
-            ordem=int(dados["ordem"]),
-            corrida_id=int(dados["corrida_id"]),
-        )
-        db.session.add(checkpoint)
-        db.session.commit()
-        return jsonify(checkpoint_json(checkpoint)), 201
-    except (KeyError, ValueError):
-        db.session.rollback()
-        return jsonify({"erro": "Dados inválidos para o checkpoint"}), 400
+    erro = validar(dados)
+    if erro:
+        return jsonify({"erro": erro}), 400
 
-
-@checkpoint_bp.put("/<int:checkpoint_id>")
-def atualizar_checkpoint(checkpoint_id):
-    checkpoint = db.session.get(Checkpoint, checkpoint_id)
-    if not checkpoint:
-        return jsonify({"erro": "Checkpoint não encontrado"}), 404
-    dados = request.get_json() or {}
-    for campo in ("identificacao_local", "professor_responsavel"):
-        if campo in dados:
-            setattr(checkpoint, campo, dados[campo])
-    if "ordem" in dados:
-        checkpoint.ordem = int(dados["ordem"])
-    if "corrida_id" in dados:
-        checkpoint.corrida_id = int(dados["corrida_id"])
+    checkpoint = Checkpoint(
+        nome=str(dados["nome"]).strip(),
+        localizacao=dados.get("localizacao"),
+        corrida_id=int(dados["corridaId"]),
+    )
+    db.session.add(checkpoint)
     db.session.commit()
-    return jsonify(checkpoint_json(checkpoint))
+    return jsonify(to_json(checkpoint)), 201
 
 
-@checkpoint_bp.delete("/<int:checkpoint_id>")
-def excluir_checkpoint(checkpoint_id):
-    checkpoint = db.session.get(Checkpoint, checkpoint_id)
+@checkpoint_bp.put("/<int:id>")
+def atualizar(id):
+    checkpoint = db.session.get(Checkpoint, id)
     if not checkpoint:
-        return jsonify({"erro": "Checkpoint não encontrado"}), 404
+        return jsonify({"erro": "Checkpoint não encontrado."}), 404
+
+    dados = {**to_json(checkpoint), **(request.get_json() or {})}
+    erro = validar(dados)
+    if erro:
+        return jsonify({"erro": erro}), 400
+
+    checkpoint.nome = str(dados["nome"]).strip()
+    checkpoint.localizacao = dados.get("localizacao")
+    checkpoint.corrida_id = int(dados["corridaId"])
+    db.session.commit()
+    return jsonify(to_json(checkpoint))
+
+
+@checkpoint_bp.delete("/<int:id>")
+def excluir(id):
+    checkpoint = db.session.get(Checkpoint, id)
+    if not checkpoint:
+        return jsonify({"erro": "Checkpoint não encontrado."}), 404
+
+    if checkpoint.passagens:
+        return jsonify({
+            "erro": "Não é possível excluir o checkpoint: há passagens associadas."
+        }), 409
+
     db.session.delete(checkpoint)
     db.session.commit()
     return "", 204
