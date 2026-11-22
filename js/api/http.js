@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000";
+const API_URL = "http://localhost:5000/api";
 
 export async function requisicao(recurso, opcoes = {}) {
     let resposta;
@@ -19,7 +19,15 @@ export async function requisicao(recurso, opcoes = {}) {
     }
 
     if (!resposta.ok) {
-        const detalhe = await resposta.text();
+        let detalhe = "";
+
+        try {
+            const corpo = await resposta.json();
+            detalhe = corpo.erro || "";
+        } catch {
+            // resposta sem JSON: usa a mensagem padrão
+        }
+
         throw new Error(
             detalhe
                 ? `${detalhe} (HTTP ${resposta.status})`
@@ -30,7 +38,3 @@ export async function requisicao(recurso, opcoes = {}) {
     if (resposta.status === 204) return null;
     return resposta.json();
 }
-
-
-
-// teste de envio

@@ -24,6 +24,3 @@ export function excluirCheckpoint(id) {
     return requisicao(`${RECURSO}/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
 
-
-//aaaaaaaaaaaa
-// aaaaaaaaaaaaaaaaa
